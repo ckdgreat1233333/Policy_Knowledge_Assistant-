@@ -53,14 +53,6 @@ def init_db():
             escalation_reason TEXT DEFAULT '',
             payload TEXT DEFAULT ''
         );
-        CREATE TABLE IF NOT EXISTS knowledge_updates (
-            change_date TEXT,
-            document_id TEXT,
-            from_version TEXT,
-            summary TEXT,
-            approved_by TEXT,
-            PRIMARY KEY (change_date, document_id)
-        );
     """)
     conn.commit()
     conn.close()
@@ -154,25 +146,6 @@ def list_policy_sessions(limit: int = 100) -> list:
     conn = get_db()
     rows = conn.execute(
         "SELECT * FROM policy_sessions ORDER BY timestamp DESC LIMIT ?",
-        (limit,)).fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
-
-
-def record_knowledge_update(change_date: str, document_id: str,
-                            from_version: str, summary: str, approved_by: str):
-    conn = get_db()
-    conn.execute(
-        "INSERT OR REPLACE INTO knowledge_updates VALUES (?,?,?,?,?)",
-        (change_date, document_id, from_version, summary, approved_by))
-    conn.commit()
-    conn.close()
-
-
-def list_knowledge_updates(limit: int = 50) -> list:
-    conn = get_db()
-    rows = conn.execute(
-        "SELECT * FROM knowledge_updates ORDER BY change_date DESC LIMIT ?",
         (limit,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]

@@ -11,3 +11,4 @@ Append-only change history for the policy corpus. One line per published change:
 2026-05-01 | pol_health_secureplus | v2.0 -> v2.1 | Maternity waiting period reduced to 24 months; newborn day-one cover formalised | Product Committee
 2026-05-01 | end_health_maternity | new -> v1.0 | Issued E01 maternity endorsement per IRDAI/HLT/MISC/CIR/089/2026 | Compliance
 2026-07-01 | sop_underwriter_escalation | v1.2 -> v1.3 | Added precedence order (regulatory > endorsement > base wording) and 24h escalation TAT | Chief Underwriting Officer
+

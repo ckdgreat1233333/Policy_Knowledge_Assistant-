@@ -229,7 +229,8 @@ async def knowledge_freshness():
     if service is None:
         raise HTTPException(503, "Policy service unavailable")
     dashboard = service.freshness_dashboard()
-    dashboard["updates"] = db.list_knowledge_updates()
+    from knowledge.freshness import parse_update_log
+    dashboard["updates"] = parse_update_log(os.path.dirname(__file__))
     return dashboard
 
 
