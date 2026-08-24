@@ -1,96 +1,117 @@
-"""
-Personalized Financial Advisory Assistant - Backend API
--------------------------------------------------------
-Banking domain. Supports relationship managers (business track) and customers
-(customer track) with responsible, explainable, compliance-aligned GenAI.
+"""Policy & Knowledge Management Assistant - Backend API.
 
-Recommendation logic:
-  - Deterministic suitability engine decides (guardrails against mis-selling)
-  - Product knowledge RAG grounds every explanation
-  - LLM only verbalizes engine output, never invents products
+Insurance domain. Two deliberately separated interaction flows:
+
+  Business track : underwriters & service teams get clause-level retrieval,
+                   a full ReAct reasoning trace, citations, confidence and
+                   human-in-the-loop escalation.
+  Customer track : customers get simplified, compliance-safe explanations,
+                   policy discovery, comparison and renewal guidance.
 """
+import hashlib
+import logging
+import os
+import secrets
+import uuid
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from typing import Optional
-import uuid, os, hashlib, secrets, logging
-
-from services.llm_service import LLMService
 
 import database as db
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("advisory")
+logger = logging.getLogger("policy_assistant")
 
-app = FastAPI(title="Personalized Financial Advisory Assistant",
-              description="Responsible, explainable, compliance-aligned financial advisory "
-                          "for relationship managers and customers (banking domain)",
-              version="2.0.0")
+app = FastAPI(
+    title="Policy & Knowledge Management Assistant",
+    description="Enterprise policy knowledge system for insurance: RAG + custom "
+                "ReAct agent with freshness controls, citations and escalation.",
+    version="1.0.0")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False,
                    allow_methods=["*"], allow_headers=["*"])
 
-llm_service = LLMService()
-
-advisory_service = None
+service = None
 try:
-    from services.advisory_service import AdvisoryService
-    advisory_service = AdvisoryService()
+    from services.policy_service import get_policy_service
+    service = get_policy_service()
 except Exception as exc:
-    logger.warning(f"Advisory service unavailable: {exc}")
+    logger.warning("Policy service unavailable: %s", exc)
 
-# ─── Auth helpers ───
-def _hash_pw(p: str) -> str: return hashlib.sha256(p.encode()).hexdigest()
-def _verify_pw(p: str, h: str) -> bool: return _hash_pw(p) == h
-def _token() -> str: return f"tok-{secrets.token_hex(16)}"
 
-if not db.user_exists("admin"):
-    db.create_user("admin", "admin@bank.com", "Relationship Manager",
-                   "+91 9876543210", _hash_pw("admin123"), "officer")
+def _hash_pw(p: str) -> str:
+    return hashlib.sha256(p.encode()).hexdigest()
 
-# ─── Audit helper ───
-def _audit_entry(actor, event, details, risk="low"):
-    log_id = f"LOG-{uuid.uuid4().hex[:8]}"
-    db.create_audit_log(log_id, actor, event, details, risk)
-    return db.get_audit_log(log_id)
 
-# ══════════════════════════════════════════════════
-# REQUEST MODELS
-# ══════════════════════════════════════════════════
+def _verify_pw(p: str, h: str) -> bool:
+    return _hash_pw(p) == h
+
+
+def _token() -> str:
+    return f"tok-{secrets.token_hex(16)}"
+
+
+def _audit(actor, event, details, risk="low"):
+    db.create_audit_log(f"LOG-{uuid.uuid4().hex[:8]}", actor, event, details, risk)
+
+
+# ════════════════ REQUEST MODELS ════════════════
 
 class LoginRequest(BaseModel):
-    username: str; password: str; portalType: str = "customer"
-
-class RegisterRequest(BaseModel):
-    username: str; fullName: str; email: str; password: str; phone: Optional[str] = ""
+    username: str
+    password: str
     portalType: str = "customer"
 
-class RMAdvisoryRequest(BaseModel):
-    customer_id: str
+
+class RegisterRequest(BaseModel):
+    username: str
+    fullName: str = ""
+    email: str = ""
+    password: str
+    phone: Optional[str] = ""
+    portalType: str = "customer"
+
+
+class BusinessQueryRequest(BaseModel):
     question: str
 
-class CustomerGoalRequest(BaseModel):
-    customer_id: str
-    goal: str = "wealth"
-    amount: Optional[float] = None
-    horizon_months: Optional[int] = None
 
-# ══════════════════════════════════════════════════
-# ROOT
-# ══════════════════════════════════════════════════
+class CustomerChatRequest(BaseModel):
+    message: str
+
+
+class CompareRequest(BaseModel):
+    policy_a: str
+    policy_b: str
+
+
+# ════════════════ ROOT / HEALTH ════════════════
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def root():
     idx = os.path.join(os.path.dirname(__file__), "static", "index.html")
     if os.path.exists(idx):
         with open(idx, "r", encoding="utf-8") as f:
-            return HTMLResponse(f.read())
-    return {"service": "Personalized Financial Advisory Assistant", "version": "2.0.0"}
+            return HTMLResponse(f.read(), headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate"})
+    return {"service": "Policy & Knowledge Management Assistant", "version": "1.0.0"}
 
-# ══════════════════════════════════════════════════
-# AUTH (role selection enables the two response flows)
-# ══════════════════════════════════════════════════
+
+@app.get("/api/health")
+async def health():
+    llm_ok = False
+    try:
+        from services.llm_service import LLMService
+        llm_ok = LLMService().health_check()
+    except Exception:
+        pass
+    return {"status": "ok", "knowledge_ready": bool(service), "llm_connected": llm_ok}
+
+
+# ════════════════ AUTH (portal selection separates flows) ════════════════
 
 @app.post("/api/auth/register")
 async def register(req: RegisterRequest):
@@ -98,11 +119,13 @@ async def register(req: RegisterRequest):
         raise HTTPException(400, "Username already taken")
     if len(req.password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters")
-    db.create_user(req.username, req.email or "", req.fullName, req.phone or "",
-                   _hash_pw(req.password), req.portalType)
+    db.create_user(req.username, req.email or "", req.fullName or req.username,
+                   req.phone or "", _hash_pw(req.password), req.portalType)
     user = db.get_user(req.username)
-    _audit_entry("System", "User Registration", f"New user registered: {req.username}")
-    return {"user": {k: v for k, v in user.items() if k != "password"}, "token": _token()}
+    _audit(req.username, "User Registration", f"portal={req.portalType}")
+    return {"user": {k: v for k, v in user.items() if k != "password"},
+            "token": _token()}
+
 
 @app.post("/api/auth/login")
 async def login(req: LoginRequest):
@@ -110,99 +133,115 @@ async def login(req: LoginRequest):
     if not user or not _verify_pw(req.password, user.get("password", "")):
         raise HTTPException(401, "Invalid username or password")
     user["role"] = req.portalType
-    _audit_entry(req.username, "User Login", f"User logged in as {req.portalType}")
-    return {"user": {k: v for k, v in user.items() if k != "password"}, "token": _token()}
+    _audit(req.username, "User Login", f"portal={req.portalType}")
+    return {"user": {k: v for k, v in user.items() if k != "password"},
+            "token": _token()}
+
 
 @app.post("/api/auth/logout")
 async def logout():
     return {"success": True}
 
-@app.get("/api/auth/me")
-async def auth_me(username: str = ""):
-    user = db.get_user(username) if username else None
-    if not user:
-        raise HTTPException(401, "Not authenticated")
-    return {"user": {k: v for k, v in user.items() if k != "password"}}
 
-# ══════════════════════════════════════════════════
-# AUDIT LEDGER (accountability / human-in-the-loop evidence)
-# ══════════════════════════════════════════════════
+# ════════════════ BUSINESS TRACK ════════════════
+
+@app.post("/api/business/query")
+async def business_query(req: BusinessQueryRequest):
+    """Underwriter query -> ReAct trace + cited answer + escalation status."""
+    q = (req.question or "").strip()
+    if not q:
+        raise HTTPException(400, "Question is required")
+    if service is None:
+        raise HTTPException(503, "Policy service unavailable")
+    answer = service.business_query(q)
+    payload = answer.to_dict()
+    _audit("underwriter", "Business Policy Query",
+           f"{q[:120]} -> {payload['decision']} conf={payload['confidence']}",
+           "high" if payload["needs_human_override"] else "low")
+    return payload
+
+
+# ════════════════ CUSTOMER TRACK ════════════════
+
+@app.post("/api/customer/chat")
+async def customer_chat(req: CustomerChatRequest):
+    """Customer question -> simplified compliance-safe explanation."""
+    msg = (req.message or "").strip()
+    if not msg:
+        raise HTTPException(400, "Message is required")
+    if service is None:
+        raise HTTPException(503, "Policy service unavailable")
+    answer = service.customer_chat(msg)
+    payload = answer if isinstance(answer, dict) else answer.to_dict()
+    _audit("customer", "Customer Policy Chat",
+           f"{msg[:120]} -> {payload['decision']}",
+           "high" if payload["decision"] != "answer" else "low")
+    return payload
+
+
+@app.post("/api/customer/compare")
+async def customer_compare(req: CompareRequest):
+    """Embedding-aligned comparison of two policies + disclosures."""
+    if service is None:
+        raise HTTPException(503, "Policy service unavailable")
+    try:
+        result = service.compare_policies(req.policy_a.strip(), req.policy_b.strip())
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    _audit("customer", "Policy Comparison",
+           f"{req.policy_a} vs {req.policy_b}")
+    return result
+
+
+# ════════════════ KNOWLEDGE / FRESHNESS / AUDIT ════════════════
+
+@app.get("/api/policies")
+async def list_policies():
+    if service is None:
+        raise HTTPException(503, "Policy service unavailable")
+    docs = [d.to_dict() for d in service.store.documents()]
+    return {"policies": [d for d in docs if d["doc_type"] in ("policy", "endorsement")]}
+
+
+@app.post("/api/knowledge/reingest")
+async def knowledge_reingest():
+    """Re-scan data/policies/ and rebuild the index for changed/new files
+    without restarting the server."""
+    if service is None:
+        raise HTTPException(503, "Policy service unavailable")
+    before = len(service.store.chunks)
+    docs_before = {d.document_id for d in service.store.documents()}
+    try:
+        service.store.ingest()
+    except Exception as exc:
+        raise HTTPException(500, f"Re-ingestion failed: {exc}")
+    docs = [d.to_dict() for d in service.store.documents()]
+    added = [d["document_id"] for d in docs if d["document_id"] not in docs_before]
+    _audit("underwriter", "Knowledge Re-ingest",
+           f"chunks {before}->{len(service.store.chunks)}; added={added or 'none'}")
+    return {"chunks": len(service.store.chunks), "documents": len(docs),
+            "added": added}
+
+
+@app.get("/api/knowledge/freshness")
+async def knowledge_freshness():
+    """Freshness dashboard: version tags, ages, stale warnings, change log."""
+    if service is None:
+        raise HTTPException(503, "Policy service unavailable")
+    dashboard = service.freshness_dashboard()
+    dashboard["updates"] = db.list_knowledge_updates()
+    return dashboard
+
+
+@app.get("/api/sessions")
+async def list_sessions(limit: int = 50):
+    return {"sessions": db.list_policy_sessions(limit=limit)}
+
 
 @app.get("/api/audit-logs")
 async def list_audit_logs(riskLevel: str = ""):
-    logs = db.list_audit_logs(risk_level=riskLevel)
-    return {"logs": logs}
+    return {"logs": db.list_audit_logs(risk_level=riskLevel)}
 
-# ══════════════════════════════════════════════════
-# PERSONALIZED FINANCIAL ADVISORY
-# ══════════════════════════════════════════════════
-
-@app.get("/api/advisory/customers")
-async def advisory_customers(search: str = ""):
-    return {"customers": db.list_customers(search=search)}
-
-
-@app.get("/api/advisory/customers/{customer_id}/profile")
-async def advisory_customer_profile(customer_id: str):
-    if advisory_service is None:
-        raise HTTPException(503, "Advisory service unavailable")
-    try:
-        profile = advisory_service.get_profile(customer_id)
-    except ValueError as exc:
-        raise HTTPException(404, str(exc))
-    _audit_entry(customer_id, "Customer Profile View",
-                 f"Profile built for {customer_id}", "low")
-    return {"profile": profile.to_dict(), "summary": profile.summary_text()}
-
-
-@app.post("/api/advisory/rm-query")
-async def advisory_rm_query(req: RMAdvisoryRequest):
-    """Business track - RM decision support. Profile summary, engine-scored
-    recommendations with reasoning, risk flags and escalation status."""
-    if advisory_service is None:
-        raise HTTPException(503, "Advisory service unavailable")
-    response = advisory_service.rm_query(req.customer_id, req.question, actor="rm")
-    payload = response.to_dict(include_retrieved=True)
-    _audit_entry(f"RM:{req.customer_id}", "RM Advisory Query",
-                 req.question[:160], "high" if response.needs_human_override else "low")
-    return payload
-
-
-@app.post("/api/advisory/customer-goal")
-async def advisory_customer_goal(req: CustomerGoalRequest):
-    """Customer track - goal-based guidance. Plain language, disclaimers,
-    non-promissory enforcement; blocked/escalated products never shown."""
-    if advisory_service is None:
-        raise HTTPException(503, "Advisory service unavailable")
-    response = advisory_service.customer_goal(
-        req.customer_id, req.goal, amount=req.amount,
-        horizon_months=req.horizon_months, actor="customer")
-    payload = response.to_dict(include_retrieved=False)
-    _audit_entry(f"CU:{req.customer_id}", "Customer Goal Guidance",
-                 f"{req.goal} | amount={req.amount}", "low")
-    return payload
-
-
-@app.get("/api/advisory/products")
-async def advisory_products():
-    conn = db.get_db()
-    rows = conn.execute("SELECT * FROM products ORDER BY risk_level, product_id").fetchall()
-    conn.close()
-    return {"products": [dict(r) for r in rows]}
-
-
-@app.get("/api/advisory/segments")
-async def advisory_segments():
-    if advisory_service is None:
-        raise HTTPException(503, "Advisory service unavailable")
-    from profiling.segmentation import get_segmenter
-    seg = get_segmenter()
-    return {"segments": seg.describe_segments()}
-
-
-@app.get("/api/advisory/sessions")
-async def advisory_sessions(limit: int = 50):
-    return {"sessions": db.list_advisory_sessions(limit=limit)}
 
 if __name__ == "__main__":
     import uvicorn

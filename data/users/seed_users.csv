@@ -1,0 +1,4 @@
+username,email,name,phone,password,role
+underwriter,u@insureco.com,Priya Nair,+91 9800011122,underwriter123,underwriter
+customer,c@insureco.com,Rahul Verma,+91 9822233344,customer123,customer
+admin,a@insureco.com,System Admin,,admin123,underwriter

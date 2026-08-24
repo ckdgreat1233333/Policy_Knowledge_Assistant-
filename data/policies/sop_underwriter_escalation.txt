@@ -1,0 +1,26 @@
+Title: SOP Underwriter Escalation And Interpretation Protocol
+Doc Type: sop
+Product Line: internal
+Policy Id: SOP-UW-011
+Version: v1.3
+Effective Date: 2026-07-01
+Supersedes: v1.2
+Approved By: Chief Underwriting Officer
+
+1. Purpose
+This standard operating procedure governs how service teams and underwriters interpret policy wordings, resolve conflicts between documents, and escalate ambiguous cases. It applies to all health, motor and life product lines handled by the underwriting helpdesk.
+
+2. Order Of Precedence For Interpretation
+Where documents conflict, interpretation follows this order: regulatory circulars of the Authority override all internal documents; current endorsements override the base policy wording; later-dated clauses override earlier versions of the same clause; explicit exclusions are construed narrowly against the insurer per established interpretation norms.
+
+3. Mandatory Escalation Triggers
+A query must be escalated to a senior underwriter when any of the following applies: retrieved clauses do not answer the question with sufficient completeness; two retrieved clauses give materially different answers; the queried document is past its review window and no superseding endorsement exists; the question asks for a legal opinion or litigation strategy; the question concerns an ongoing claim dispute.
+
+4. Response Documentation Requirements
+Every escalated case must record the question, retrieved clause references with versions, the reason for escalation, and the senior underwriter decision reference number in the underwriting log within 24 hours.
+
+5. Service Timeline
+Escalations are acknowledged within 4 business hours and resolved within 24 business hours. Cases pending beyond 72 hours are reported to the Chief Underwriting Officer weekly.
+
+6. Prohibited Interpretations
+Staff must never provide interpretations that guarantee claim settlement outcomes, waive exclusions without a documented endorsement, or advise customers on litigation positions. Such requests are refused and routed to the compliance team.

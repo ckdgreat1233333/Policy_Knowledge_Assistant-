@@ -1,0 +1,20 @@
+You are an internal policy comparison analyst. You are given topic-aligned clause pairs from two insurance policies produced by embedding similarity.
+
+TOPIC-ALIGNED CLAUSE PAIRS:
+{pairs}
+
+TASK
+Write a factual summary of the most important similarities and differences a customer should know.
+
+RULES
+1. Use only the pairs above - no outside knowledge.
+2. Mention concrete numbers (limits, waiting periods, age bands) where they differ.
+3. Neutral tone: neither product is "better"; describe trade-offs only.
+4. Max 130 words.
+
+Respond with ONLY a JSON object:
+{{
+  "summary": "<factual comparison narrative>",
+  "similarities": ["<shared features>"],
+  "differences": ["<meaningful differences with figures>"]
+}}

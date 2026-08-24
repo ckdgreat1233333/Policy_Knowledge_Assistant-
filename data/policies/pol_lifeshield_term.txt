@@ -1,0 +1,35 @@
+﻿Title: LifeShield Pure Term Plan
+Doc Type: policy
+Product Line: life
+Policy Id: POL-LIF-003
+Version: v1.3
+Effective Date: 2024-06-01
+Supersedes: v1.2
+Approved By: Product Committee
+
+1. Scope Of Cover
+This pure protection term plan pays the Sum Assured to the nominee upon death of the life assured during the policy term, provided the policy is in force on the date of death. No maturity benefit is payable if the life assured survives the term.
+
+2. Eligibility And Sum Assured
+Entry age is 18 to 60 years; policy term ranges from 10 to 40 years subject to a maximum maturity age of 75 years. Minimum sum assured is Rs 25 lakh with no maximum beyond underwriting limits based on income justification.
+
+3. Waiting And Contestability Periods
+Death claims arising from suicide within the first 12 months of commencement are not admissible; premiums paid are refunded. The insurer may contest misstatements of medical or smoking history for 3 years from commencement after which the policy becomes non-contestable except for proven fraud.
+
+4. Exclusions
+The policy does not pay death benefit where death results directly or indirectly from suicide within 12 months as stated above, from participation in criminal acts, from aviation other than travel as a fare-paying passenger on a licensed commercial flight, from hazardous sports including racing, mountaineering and scuba diving unless declared and accepted at underwriting.
+
+5. Riders
+Optional riders available are Accidental Death Benefit Rider up to Rs 1 crore and Critical Illness Rider covering 37 listed conditions. Riders terminate automatically when base premium ceases or on payment of the terminal illness claim.
+
+6. Grace Period Revival And Lapse
+A grace period of 30 days applies for annual mode and 15 days for monthly mode. Lapsed policies may be revived within 2 years of first unpaid premium subject to declaration of insurability and payment of arrears with interest per the revival schedule.
+
+7. Free Look Period
+A free look period of 30 days applies from receipt of the policy document. Cancellation within free look refunds premium less proportionate risk premium, medical examination costs and stamp duty.
+
+8. Nomination And Assignment
+Nomination under applicable law is permitted at inception or later by endorsement. Assignment transfers beneficial interest and requires written notice in the prescribed form.
+
+9. Tax Treatment
+Premiums and benefits receive treatment per prevailing tax laws which may change; tax benefits are not guaranteed and depend on statutory provisions in force in the relevant year.

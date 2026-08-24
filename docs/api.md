@@ -1,288 +1,108 @@
-# API Reference — Personalized Financial Advisory Assistant
+# API Reference
 
-All endpoints return JSON. The complete OpenAPI schema is available at `/docs` (Swagger UI) when the server is running.
+Base URL: `http://localhost:8000`
 
-## Advisory Endpoints
+## Auth
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/advisory/customers?search=` | Searchable customer directory (id, name, age, city, appetite, KYC) |
-| GET | `/api/advisory/customers/{id}/profile` | Profile with derived features, computed risk capacity, life stage, segment + summary text |
-| POST | `/api/advisory/rm-query` | **Business track** `{customer_id, question}` → narrative, eligible+escalated candidates with verdicts/reasons/warnings/citations, `needs_human_override`, RM disclaimer |
-| POST | `/api/advisory/customer-goal` | **Customer track** `{customer_id, goal, amount?, horizon_months?}` → plain-language guidance, eligible options only, three disclaimers; internal retrieval hidden |
-| GET | `/api/advisory/products` | Structured product catalog |
-| GET | `/api/advisory/segments` | Cluster summaries (label + avg stats per segment) |
-| GET | `/api/advisory/sessions?limit=` | Advisory audit trail |
-
-Goals: `education`, `retirement`, `wealth`, `safety`, `tax`.
-
----
-
-## Regulatory Copilot Endpoints
-
-The copilot exposes **two response tracks**, both grounded in the approved regulatory corpus:
-
-| Track | Endpoint | Audience | Returns |
-|-------|----------|----------|---------|
-| **Internal** | `POST /api/regulatory/query` | Compliance & audit teams | Grounded answer, verifiable citations, confidence scores, retrieval excerpts, escalation recommendation |
-| **Customer** | `POST /api/regulatory/customer-query` | Bank customers | Plain-language answer + disclaimer; internal retrieval details are **never** exposed |
-
----
-
-## Authentication
-
-### `POST /api/auth/login`
-Logs a user in.
-
-**Request:**
+### POST /api/auth/register
 ```json
-{ "username": "admin", "password": "admin123", "portalType": "officer" }
+{ "username": "newu", "fullName": "New User", "email": "n@x.com",
+  "password": "secret1", "portalType": "underwriter" }
 ```
-`portalType` may be `customer` or `officer`.
+→ `{ "user": {...no password...}, "token": "tok-..." }`
 
-**Response 200:**
+### POST /api/auth/login
+```json
+{ "username": "underwriter", "password": "underwriter123", "portalType": "underwriter" }
+```
+→ `{ "user": { "username", "name", "role", ... }, "token": "tok-..." }`
+
+`portalType` selects the portal: `underwriter` (business track) or `customer`.
+
+## Business track
+
+### POST /api/business/query
+Request: `{ "question": "Is maternity covered under SecurePlus and after what waiting period?" }`
+
+Response:
 ```json
 {
-  "user": { "username": "admin", "email": "admin@bankreg.com", "name": "Compliance Officer",
-            "phone": "+91 9876543210", "role": "officer", "password": null },
-  "token": "tok-<hex>"
-}
-```
-
-### `POST /api/auth/register`
-**Request:**
-```json
-{ "username": "cust1", "fullName": "Ravi Kumar", "email": "r@mail.com",
-  "password": "pass123", "phone": "999", "portalType": "customer" }
-```
-Password must be at least 6 characters. **Response 200:** `{ "user": {...}, "token": "tok-..." }`
-
-### `POST /api/auth/logout`
-**Response 200:** `{ "success": true }`
-
-### `GET /api/auth/me?username=<username>`
-Returns the current user. **Response 200:** `{ "user": {...} }`. **401** if no such user.
-
-### `GET /api/users`
-Lists all users. **Response 200:** `{ "users": [ { "username", "email", "name", "phone", "role" }, ... ] }`
-
-### `PATCH /api/users/profile`
-**Request:** `{ "name": "...", "email": "...", "phone": "...", "username": "..." }`
-**Response 200:** `{ "user": { "role", "email", "name", "phone" } }`
-
-### `DELETE /api/users/{username}`
-Removes a user. **Response 200:** `{ "success": true }`, **404** if not found.
-
----
-
-## Regulatory Copilot — Internal Track (Compliance & Audit)
-
-### `POST /api/regulatory/query`
-
-Ask a grounded compliance question. The answer is generated **only** from retrieved, approved regulatory clauses.
-
-**Request:**
-```json
-{ "question": "What documents are required for KYC verification of an individual customer?" }
-```
-
-**Response 200:**
-```json
-{
-  "track": "internal",
-  "question": "What documents are required for KYC verification of an individual customer?",
+  "track": "business",
+  "decision": "answer | escalate | refuse",
+  "intent": "coverage | exclusion | endorsement | renewal | claim_process | eligibility | general | out_of_scope",
   "answered": true,
-  "answer": "For an individual customer, KYC verification may be satisfied by presenting any one officially valid document, such as a passport, driving licence, Voter ID, Aadhaar card, or NREGA job card.",
+  "narrative": "...source-based interpretation with inline [doc §ref] citations...",
+  "confidence": 0.94,
   "citations": [
-    {
-      "chunk_id": "rbi_kyc_master_direction-1_1",
-      "clause_ref": "1.1",
-      "source": "Master Direction - Know Your Customer (KYC) Norms",
-      "circular_no": "RBI/2025-26/09",
-      "quote": "Identity shall be verified using an officially valid document.",
-      "grounded": true
-    }
+    { "document_id": "pol_health_secureplus", "clause_ref": "3.2",
+      "title": "SecurePlus Family Health Policy", "version": "v2.1",
+      "effective_date": "2026-05-01", "similarity": 0.71,
+      "display": "SecurePlus Family Health Policy, §3.2 (v2.1)" }
   ],
-  "retrieved": [
-    {
-      "chunk_id": "rbi_kyc_master_direction-1_1",
-      "clause_ref": "1.1",
-      "source": "Master Direction - Know Your Customer (KYC) Norms",
-      "circular_no": "RBI/2025-26/09",
-      "version": "v1.0",
-      "similarity": 0.78,
-      "text": "1.1 ..."
-    }
+  "reasoning_trace": [
+    { "step_no": 1, "thought": "...", "action": "search_clauses",
+      "action_input": "...", "observation": "..." }
   ],
-  "retrieval_confidence": 0.78,
-  "answer_confidence": 0.9,
-  "confidence": 0.83,
-  "confidence_level": "High",
-  "needs_escalation": false,
-  "escalation_reason": null,
-  "contradiction_detected": false,
-  "disclaimer": null
+  "retrieved_clauses": [ { "clause_ref", "document_id", "title", "doc_type",
+      "product_line", "version", "effective_date", "similarity",
+      "freshness", "text" } ],
+  "disclaimers": ["Internal decision support only. ..."],
+  "stale_warnings": ["WARNING/CRITICAL ..."],
+  "compliance_notes": ["Grounded on N validated clause citation(s); ..."],
+  "needs_human_override": false,
+  "escalation_reason": "",
+  "suggested_followups": ["...", "..."]
 }
 ```
 
-**Key fields:**
+## Customer track
 
-| Field | Meaning |
-|-------|---------|
-| `answered` | `true` when a grounded answer was produced, `false` for the "Information not found" response |
-| `citations[].grounded` | Whether the citation references a clause that was actually retrieved |
-| `confidence` | Combined confidence: `0.6 × retrieval + 0.4 × llm` |
-| `confidence_level` | `High` (≥ 0.75), `Medium` (≥ 0.55), `Low` |
-| `needs_escalation` | `true` when the answer requires human compliance review |
-| `escalation_reason` | Why escalation is recommended (low confidence, ungrounded citations, contradiction, or no answer) |
-| `contradiction_detected` | `true` when retrieved clauses from different documents conflict |
-| `retrieved` | Full retrieval excerpts with similarity scores (internal-only) |
+### POST /api/customer/chat
+Request: `{ "message": "What happens if I miss my renewal date?" }`
 
-**Behavioural guarantees:**
-- If retrieval similarity falls below the floor (0.45), the LLM is **never called** and the response is the "Information not found" message with `answered: false` and `needs_escalation: true`.
-- If the LLM marks `not_supported`, or produces no usable answer, the same "Information not found" response is returned.
-- If two retrieved clauses contradict each other, the query is escalated for human adjudication instead of the AI picking a side.
+Response: same shape as business but with
+- `reasoning_trace: []` and `retrieved_clauses: []` (internal detail never exposed),
+- customer disclaimers (not legal advice; policy document prevails; confirm with team),
+- `citations` reduced to source chips,
+- `suggested_followups` next questions.
 
-**Response when no answer (200, `answered: false`):**
+### POST /api/customer/compare
+```json
+{ "policy_a": "SecurePlus Health", "policy_b": "DriveCare Motor" }
+```
 ```json
 {
-  "track": "internal",
-  "answered": false,
-  "answer": "Information not found in the approved regulatory documents. Please refine the query or escalate to a compliance officer for manual research.",
-  "confidence": 0.0,
-  "confidence_level": "Low",
-  "needs_escalation": true,
-  "escalation_reason": "No relevant regulatory clause retrieved (similarity below threshold).",
-  "citations": [], "retrieved": [], "contradiction_detected": false, "disclaimer": null
+  "policy_a": { "id": "pol_health_secureplus", "title": "..." },
+  "policy_b": { "id": "pol_motor_drivecare", "title": "..." },
+  "rows": [ { "topic": "Scope Of Cover", "text_a": "...", "text_b": "...",
+              "similarity": 0.62, "relation": "same|different|only_a|only_b" } ],
+  "summary": "factual comparison narrative",
+  "disclosures": ["similarity ≠ legal equivalence", "pricing excluded", "..."]
 }
 ```
 
----
+## Knowledge
 
-## Regulatory Copilot — Customer Track (Transparency)
-
-### `POST /api/regulatory/customer-query`
-
-Ask a plain-language question about bank regulations. The customer track never exposes internal retrieval details, circular numbers, or confidence internals.
-
-**Request:**
+### GET /api/knowledge/freshness
 ```json
-{ "question": "What do I need to open a bank account?" }
+{ "documents": [ { "document_id", "title", "doc_type", "product_line",
+    "version", "effective_date", "supersedes", "age_days",
+    "freshness_status": "fresh|stale|critical", "clause_count", "last_change" } ],
+  "counts": { "fresh": 6, "stale": 0, "critical": 1 },
+  "updates": [ { "change_date", "document_id", "from_version",
+                 "summary", "approved_by" } ] }
 ```
 
-**Response 200:**
-```json
-{
-  "track": "customer",
-  "question": "What do I need to open a bank account?",
-  "answered": true,
-  "answer": "To open a regular bank account you will need to show one government-issued identity document, such as a passport, driving licence, Voter ID, Aadhaar card or NREGA job card.",
-  "citations": [],
-  "retrieved": [],
-  "retrieval_confidence": 0.72,
-  "answer_confidence": 0.65,
-  "confidence": 0.69,
-  "confidence_level": "Medium",
-  "needs_escalation": false,
-  "escalation_reason": null,
-  "contradiction_detected": false,
-  "disclaimer": "This information is for general guidance only and is not legal advice. For help specific to your account, please contact your bank."
-}
-```
+### GET /api/policies
+Ingested documents of type `policy|endorsement` with metadata.
 
-**Behavioural guarantees:**
-- `retrieved` is always an empty array on the customer track — internal excerpts are never exposed.
-- Answers carry the standard `disclaimer`.
-- If no approved disclosure supports the question, the customer receives the "I could not find this information..." message with `answered: false`.
-- If the question requires a bank official (`needs_human`) or retrieved clauses conflict, the response redirects the customer to the bank with a complex-question notice and `answered: false`.
+## Audit
 
----
+### GET /api/sessions?limit=50
+Session history: timestamp, track, question, intent, decision, override flag, escalation reason.
 
-## Regulatory Corpus Management
+### GET /api/audit-logs?riskLevel=high
+Immutable audit ledger entries.
 
-### `GET /api/regulatory/documents`
-Lists the version-controlled approved corpus (from the SQLite registry).
-
-**Response 200:**
-```json
-{
-  "documents": [
-    {
-      "doc_id": "rbi_kyc_master_direction",
-      "title": "Master Direction - Know Your Customer (KYC) Norms",
-      "circular_no": "RBI/2025-26/09",
-      "issue_date": "01-Aug-2025",
-      "version": "v1.0",
-      "category": "circular",
-      "file_path": "...\\data\\regulatory\\rbi_kyc_master_direction.txt",
-      "file_hash": "<sha256>",
-      "status": "active",
-      "ingested_at": "2026-08-08 00:00:00"
-    }
-  ]
-}
-```
-
-### `POST /api/regulatory/documents`
-Ingest a new approved regulatory document (multipart/form-data). Supported extensions: `.txt`, `.md`, `.pdf`. The file is stored in the approved corpus directory and the vector index is **rebuilt immediately** so the copilot answers from it right away.
-
-**Form fields:**
-| Field | Type | Notes |
-|-------|------|-------|
-| `file` | file | Required. The document (`.txt` / `.md` / `.pdf`) |
-| `title` | string | Optional. Falls back to the parsed document header or filename |
-| `circular_no` | string | Optional |
-| `issue_date` | string | Optional |
-| `version` | string | Optional (default `v1.0`) |
-| `category` | string | Optional (default `circular`) |
-
-**Response 200:** `{ "document": { ...registry row }, "ingested": true }`
-
-> **Note on document format:** documents are chunked at **clause level** (`1.`, `1.1`, `2.4`, ...). A document with no parseable numbered clauses is skipped by the ingest pipeline. See `docs/workflow.md` for the expected format.
-
-### `DELETE /api/regulatory/documents/{doc_id}`
-Archives a document: removes the file, deletes the registry row, and rebuilds the index. **Response 200:** `{ "success": true }`, **404** if the document is not in the registry.
-
----
-
-## Reference & Administration
-
-### `GET /api/audit-logs?riskLevel=`
-Immutable audit ledger. `riskLevel` may be `low`, `medium`, or `high`.
-
-**Response 200:**
-```json
-{
-  "logs": [
-    { "id": "LOG-<hex>", "timestamp": "2026-08-08 12:00:00", "actor": "Regulatory Query",
-      "eventType": "Regulatory Query", "riskLevel": "low",
-      "details": "Internal query: What documents are required for KYC..." }
-  ]
-}
-```
-
-### `GET /api/faq?search=`
-FAQ list, optionally filtered by search text.
-**Response 200:** `{ "faqs": [ { "id", "question", "answer" }, ... ] }`
-
-### `GET /`
-Serves the SPA (`static/index.html`). **Response:** HTML.
-
----
-
-## Error Format
-
-Errors follow FastAPI conventions:
-```json
-{ "detail": "Human-readable error message" }
-```
-
-Common status codes:
-
-| Code | Meaning |
-|------|---------|
-| `400` | Bad request (e.g. unsupported file extension, password too short) |
-| `401` | Invalid credentials / not authenticated |
-| `404` | Resource not found (e.g. document to archive, user to delete) |
-| `422` | Validation error (structured `detail` array) |
-| `503` | Copilot unavailable (e.g. store failed to initialize) |
+### GET /api/health
+`{ "status", "knowledge_ready", "llm_connected" }`

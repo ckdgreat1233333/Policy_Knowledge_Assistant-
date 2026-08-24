@@ -1,0 +1,20 @@
+Title: Endorsement E02 Zero Depreciation Eligibility Revision
+Doc Type: endorsement
+Product Line: motor
+Policy Id: END-MOT-002-E02
+Version: v1.1
+Effective Date: 2026-04-15
+Supersedes: clause 4.1 of pol_motor_drivecare v2.4
+Approved By: Product Committee
+
+1. Purpose Of This Endorsement
+This endorsement revises the vehicle age eligibility and claim limits for the Zero Depreciation add-on under DriveCare Motor Package Policy v2.4, aligning with revised tariff filings.
+
+2. Revised Eligibility
+The Zero Depreciation add-on is available for private cars up to 5 years of vehicle age at first purchase of the add-on. Continuation is permitted up to 7 years for renewals without break; beyond 7 years the add-on lapses and standard depreciation applies.
+
+3. Revised Claim Limit
+A maximum of two zero depreciation claims are admissible per policy year combined across all vehicles on the schedule. From the third claim onward, parts depreciation applies per Annexure M of the base policy.
+
+4. Premium Loading For High Risk Localities
+Vehicles garaged in postal codes listed in the high-theft zone annexure attract a 10 percent loading on the zero depreciation premium component. The loading is disclosed in the quotation before payment.

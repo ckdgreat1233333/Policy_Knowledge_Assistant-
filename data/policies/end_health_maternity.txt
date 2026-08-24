@@ -1,0 +1,23 @@
+Title: Endorsement E01 Maternity Waiting Period Revision
+Doc Type: endorsement
+Product Line: health
+Policy Id: END-HLT-001-E01
+Version: v1.0
+Effective Date: 2026-05-01
+Supersedes: clause 3.2 of pol_health_secureplus v2.0
+Approved By: Product Committee
+
+1. Purpose Of This Endorsement
+This endorsement revises clause 3.2 of SecurePlus Family Health Policy v2.0 following IRDAI circular IRDAI/HLT/MISC/CIR/089/2026 on standardisation of maternity benefits. All other clauses of v2.0 remain unchanged.
+
+2. Revised Maternity Cover
+Maternity expenses are covered up to Rs 75,000 for normal delivery and Rs 100,000 for caesarean section, subject to a reduced continuous waiting period of 24 months from first enrollment. The earlier waiting period of 36 months stands superseded for policies issued or renewed on or after the effective date.
+
+2.1 Newborn Cover From Day One
+The newborn baby is covered from birth under the family floater without additional premium until the next renewal, when the child must be added to the schedule.
+
+2.2 Pre And Post Natal Expenses
+Pre-natal expenses up to Rs 10,000 and post-natal expenses up to Rs 15,000 incurred within 90 days of delivery are admissible within the maternity limits stated above.
+
+3. Applicability And Transition
+For in-force policies renewed on or after the effective date, the reduced waiting period applies prospectively from renewal date and completed waiting time under v2.0 counts toward the 24-month requirement. No retrospective reopening of settled claims arises from this revision.

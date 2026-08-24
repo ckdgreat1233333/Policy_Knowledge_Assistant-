@@ -1,143 +1,127 @@
-# Architecture — Personalized Financial Advisory Assistant
+# Architecture — Policy & Knowledge Management Assistant
 
-## 1. End-to-End Diagram
+## 1. RAG + Agent architecture diagram
 
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                          PRESENTATION LAYER                                │
-│                    static/index.html (Vanilla JS SPA)                      │
-│                                                                            │
-│   ┌───────────────────────────────┐   ┌────────────────────────────────┐   │
-│   │ RM CONSOLE (Business Track)   │   │ CUSTOMER PORTAL (Customer      │   │
-│   │                               │   │ Track)                         │   │
-│   │ • Customer directory          │   │ • Goal picker (education,      │   │
-│   │ • Profile card: segment,      │   │   retirement, wealth, safety,  │   │
-│   │   life stage, feature chips   │   │   tax) + amount                │   │
-│   │ • Advisory query box          │   │ • Plain-language guidance      │   │
-│   │ • Verdict cards + risk flags  │   │ • Suitable-options only        │   │
-│   │ • Escalation / override banner│   │ • Mandatory disclaimers        │   │
-│   └───────────────┬───────────────┘   └───────────────┬────────────────┘   │
-└───────────────────┼────────────────────────────────────┼───────────────────┘
-                    │  POST /api/advisory/rm-query       │  POST /api/advisory/customer-goal
-                    ▼                                    ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                       API LAYER — FastAPI (app.py)                         │
-│   auth (role-based portals) · CORS · audit hooks · request validation      │
-└────────────────────────────────────┬───────────────────────────────────────┘
-                                     ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                  ADVISORY FACADE — services/advisory_service.py            │
-│                                                                            │
-│   ① PROFILE          ② SEGMENT           ③ EVALUATE        ④ GROUND       │
-│   ┌─────────────┐    ┌──────────────┐     ┌───────────────┐  ┌───────────┐ │
-│   │ profiling/  │    │ profiling/   │     │ guardrails/   │  │ advisory/ │ │
-│   │ profile_    │───▶│ segmentation │────▶│ suitability.py│─▶│ product_  │ │
-│   │ builder.py  │    │ MiniLM+KMeans│     │ verdicts+score│  │ store.py  │ │
-│   └─────────────┘    └──────────────┘     └───────┬───────┘  └─────┬─────┘ │
-│                                                   │                │       │
-│            blocked ⇒ excluded from customer flow  │                │       │
-│            escalate ⇒ human override required ◀───┘                │       │
-│                                                    ▼               ▼       │
-│                                          ⑤ VERBALIZE      clause-level   │
-│                                          ┌──────────────┐ RAG context     │
-│                                          │ agents/rec.  │◀────────────────│
-│                                          │ _agent.py    │                 │
-│                                          │ (LLM explains│                 │
-│                                          │  NEVER decides)                │
-│                                          └──────┬───────┘                 │
-│                                                 ▼                         │
-│                                          ⑥ SCRUB + DISCLOSE               │
-│                                          ┌──────────────┐                 │
-│                                          │ guardrails/  │  banned claims  │
-│                                          │ compliance.py│  removed AFTER  │
-│                                          └──────┬───────┘  generation    │
-└─────────────────────────────────────────────────┼─────────────────────────┘
-                                                  ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                            DATA & KNOWLEDGE LAYER                          │
-│                                                                            │
-│  SQLite (database/db.py)              Version-controlled corpus            │
-│  ├ users, audit_logs                  ├ data/products/*.txt                │
-│  ├ customers (150 synthetic)          │   (13 products × clauses)          │
-│  ├ transactions (~13k rows, 12 mo)    └ manifest JSON sidecar + hashes     │
-│  ├ products (13 structured rows)                                           │
-│  └ advisory_sessions                  FAISS index: product_index.bin       │
-│                                                                            │
-│  data/customers/*.csv ← scripts/generate_data.py (seeded, deterministic)   │
-│  data/goals/goal_definitions.json (horizons + risk guidance per goal)      │
-└────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Clients["Client layer (static/index.html SPA)"]
+        UW["Underwriter Console<br/>query · trace · citations · freshness"]
+        CU["Customer Portal<br/>chat · comparison · disclaimers"]
+    end
+
+    subgraph API["FastAPI (app.py)"]
+        EP1["POST /api/business/query"]
+        EP2["POST /api/customer/chat"]
+        EP3["POST /api/customer/compare"]
+        EP4["GET /api/knowledge/freshness"]
+    end
+
+    SVC["PolicyService facade<br/>scope guard → orchestration → scrub → audit"]
+
+    subgraph Agent["Custom ReAct agent"]
+        T["Thought: intent + missing evidence"]
+        A["Action: search_clauses /<br/>inspect_document / finish"]
+        O["Observation: similarity, coverage,<br/>version + freshness validation"]
+        D["Decision: answer / escalate / refuse"]
+    end
+
+    subgraph Knowledge["Knowledge layer"]
+        CORPUS[("data/policies/*.txt<br/>versioned corpus")]
+        CHUNK["chunker.py<br/>clause chunks"]
+        EMB["embedder.py<br/>all-MiniLM-L6-v2 normalized"]
+        FAISS[("FAISS IndexFlatL2")]
+        FRESH["freshness.py<br/>fresh/stale/critical"]
+        CMP["comparator.py<br/>embedding alignment"]
+    end
+
+    LLM["Groq LLM (gpt-oss-120b)<br/>strict-JSON grounded generation"]
+    GRD["guardrails/compliance.py<br/>scope refusal + safe-language scrub"]
+    DB[("SQLite<br/>users · audit_logs ·<br/>policy_sessions · knowledge_updates")]
+
+    UW --> EP1 --> SVC
+    CU --> EP2 --> SVC
+    CU --> EP3
+    UW --> EP4
+    SVC --> Agent
+    A --> FAISS
+    O --> FRESH
+    T --> LLM
+    D --> LLM
+    SVC --> GRD --> DB
+    SVC --> DB
+    CORPUS --> CHUNK --> EMB --> FAISS
+    FAISS --> CMP
 ```
 
-## 2. Customer Data Ingestion & Profiling Pipeline
+## 2. Ingestion & versioning pipeline
 
 ```
-customers.csv ──┐
-                ├──► SQLite seed (auto on startup) ──► ProfileBuilder
-transactions.csv┘                                            │
-                                                             ▼
-   raw attributes            derived behavioural features (traceable)
-   ─ age, income             ─ savings_rate = (credits − debits)/credits
-   ─ dependents, loan        ─ monthly_surplus, sip_ratio, emi_burden
-   ─ KYC status              ─ emergency_buffer_months = balance / avg spend
-   ─ stated appetite         ─ computed_risk_capacity (weighted rule score)
-   ─ horizon, goals          ─ life_stage, protection_gap, first_time_investor
+data/policies/<doc>.txt
+   │  header: Title / Doc Type / Product Line / Policy Id /
+   │          Version / Effective Date / Supersedes / Approved By
+   ▼
+sha256 content hash ──► manifest check (data/indexes/policy_chunks.json)
+   │ unchanged → load cached FAISS index (fast boot)
+   │ changed/new → full rebuild
+   ▼
+clause chunking (knowledge/chunker.py)
+   • split on numbered clause boundaries ("1.", "3.1", "4.2" …)
+   • each chunk keeps its parent ref ⇒ exact citations (§3.2)
+   • clauses > 900 chars are sentence-split; sub-chunks inherit the ref
+   ▼
+embedding (all-MiniLM-L6-v2, normalize_embeddings=True)
+   ▼
+FAISS IndexFlatL2 build + save (data/indexes/policy_index.bin)
 ```
 
-**Feature justification (deliverable 6.2A).** Every feature exists to satisfy a specific regulatory or suitability question:
+**Why clause-level chunking?**
+1. Insurance wordings are legally structured; a clause is a self-contained semantic and citable unit.
+2. Chunk boundaries never truncate meaning mid-sentence of obligation/exclusion.
+3. Citation refs are exact and human-verifiable ("§4 Exclusions"), which powers traceability.
+4. Long clauses are sentence-split under a size cap so embeddings stay topical.
 
-| Feature | Why it is used |
-|---|---|
-| `computed_risk_capacity` | SEBI §1 requires assessment against *documented* capacity; we combine stated appetite with behaviour and let the **more conservative bind** |
-| `emergency_buffer_months` | Illiquid products must not be recommended when the buffer is thin |
-| `emi_burden` | High fixed obligations reduce genuine loss capacity |
-| `life_stage` | Goal patterns (education fees vs retirement) drive goal-tag matching |
-| `protection_gap` | Cover-first guidance prevents investment-before-insurance mis-selling |
-| `first_time_investor` | Triggers mandatory escalation for high-risk products |
+**Embedding model choice:** `all-MiniLM-L6-v2` — 384-dim, CPU-friendly for a corpus of hundreds of clauses, strong retrieval on short technical text, and normalized vectors make `IndexFlatL2` distance equal to cosine distance (`sim = 1 - d²/2`).
 
-## 3. Embedding-Based Segmentation
+**Similarity threshold handling:** retrieval discards hits below **0.30** before the LLM ever sees them. If nothing passes, the agent escalates instead of answering — an empty context must never become creative filler.
 
-- Each profile's natural-language summary (`summary_text()`) is embedded with **all-MiniLM-L6-v2** (384-dim, L2-normalized).
-- **KMeans k=5**, `random_state=42`, `n_init=10` — fully reproducible.
-- Cluster names are assigned by **ranking centroid statistics relative to other clusters** (age, savings rate, buffer, investing activity), producing stable explainable labels such as *Pre-Retirement Preservers*, *High-Saving Wealth Builders*, *Cash-Strapped Family Builders*.
-- The segment appears on every RM profile card so the RM can sanity-check machine grouping against their own knowledge.
+## 3. Custom ReAct agent design (`agents/policy_agent.py`)
 
-## 4. Product Knowledge RAG Layer
+| Phase | Implementation |
+|-------|----------------|
+| Thought | LLM interprets query intent + what evidence is still missing (heuristic intent classifier seeds step 1) |
+| Action | tools: `search_clauses(query)` semantic search, `inspect_document(doc_id)` full-document read, `finish` |
+| Observation | deterministic code validates: hit count, top similarity, per-chunk version + freshness status |
+| Loop control | max 4 steps; re-query with rephrased terminology when weak; early-finish at ≥5 clauses with top sim ≥0.60 |
+| Decision | answer / escalate — decided in code from evidence, staleness, confidence (<0.45) and `cannot_determine`; never by the LLM |
 
-- Corpus: one narrative document per product (`data/products/prod_*.txt`) with metadata header + numbered clauses (Overview / Features / Suitability / Risks / Charges-Tax).
-- Ingestion machinery: SHA-256 hash → clause chunker → embed → FAISS `IndexFlatL2` + JSON manifest; rebuilt only when file hashes change.
-- `retrieve_for_product(product_id, query)` restricts retrieval to a single product's clauses, so each explanation quotes the right brochure section.
-- Structured rule inputs (risk level, lock-in, minimums) come from the `products` table — rules never parse prose.
+Escalation triggers (human-in-the-loop):
+- no clause passed the similarity threshold,
+- grounded generator reports it cannot determine the answer,
+- cited document is past its critical review window (>730 days),
+- confidence below threshold after freshness/degradation penalties.
 
-## 5. Agent-Driven Recommendation Logic (Hybrid)
+Failure degradation: any LLM/JSON failure falls back to (a) salvaging the `answer` field, then (b) a deterministic source-listing template — both flagged `_degraded`, which itself forces escalation rather than silent trust.
 
-```
-deterministic engine ──► candidates[] ──► agent prompt (strict JSON contract)
-                                              │
-                     parsed JSON summary ◀────┘
-                              │  else deterministic fallback template
-                              ▼
-                 scrubber → response payload → audit log
-```
+## 4. Freshness & validation controls
 
-The LLM receives the engine verdict table as **authoritative input** and is instructed not to add, remove, or re-rank products. Failure modes are handled: JSON parse failure, empty generation, API errors → template narrative, `confidence` lowered, advice still delivered safely.
+- Every chunk carries `version` + `effective_date` from the corpus header.
+- Status bands: `fresh ≤365d`, `stale >365d` (answers carry warnings), `critical >730d` (auto-escalate). Undated = critical.
+- Confidence is multiplied down (×0.8 stale, ×0.6 critical) so scores reflect version risk.
+- The append-only update log feeds `/api/knowledge/freshness` and the underwriter dashboard.
+- Precedence rule from the ingested SOP is surfaced in prompts: regulatory circulars > endorsements > base wording > older versions.
 
-## 6. Guardrails Against Mis-Selling
+## 5. Separation of interaction flows
 
-See `guardrails/suitability.py`. Verdicts: **eligible / escalate / blocked**. Hard constraints run before any LLM call; escalations require documented supervisor approval in the RM console; blocked items are structurally absent from customer-track payloads (`to_dict(include_retrieved=False)` plus eligible-only filtering).
+| Aspect | Business track | Customer track |
+|--------|---------------|----------------|
+| Endpoint | `/api/business/query` | `/api/customer/chat`, `/api/customer/compare` |
+| Reasoning trace | Full Thought/Action/Observation timeline | Never exposed |
+| Clause payloads | Up to 8 verbatim clauses w/ versions | Top 4 only (context overload control); no raw dumps |
+| Language | Technical, precedence-aware, ambiguity flags | Simplified, empathetic, jargon-translated |
+| Citations | Validated inline `[doc §ref]` chips | Source chips ("where this comes from") |
+| Failure mode | Escalate to senior underwriter | Friendly hand-off to service team |
+| Disclaimers | Internal decision-support notice | Three compliance disclaimers incl. "not legal advice" |
 
-## 7. Separate Response Flows
+## 6. Comparison engine
 
-| Aspect | RM track | Customer track |
-|---|---|---|
-| Payload | Full candidate list incl. escalate/blocked reasons | Eligible only; internal scores, segments and KYC never exposed |
-| Language | Professional shorthand, JSON-derived flags | Plain language, empathy rules, <220 words |
-| Disclaimers | Internal decision-support notice | Three-part advisory disclaimer set |
-| Retrieval refs | Compliance citation IDs included | Hidden |
-
-## 8. Key Design Decisions
-
-1. **Rules decide, LLM explains** — inversion of naive "ask GPT for recommendations"; this is what makes every output auditable.
-2. **Structured rules vs narrative RAG split** — the suitability engine reads structured attributes from SQLite; retrieval only supplies explanation context, so guardrails never depend on prose parsing.
-3. **Post-generation language enforcement** — prompt rules alone are not controls; the scrubber runs after the model on every customer string.
-4. **Graceful degradation** — no valid LLM key? Template narratives keep both tracks functional (verified by tests).
-5. **Deterministic synthetic data** — seeded generator makes demos and tests reproducible end-to-end.
+`knowledge/comparator.py`: embed every clause of both documents; for each clause of A take the best cosine match in B; label pairs deterministically — `same ≥0.75`, `different 0.45–0.75`, else `only_a`; unmatched B-clauses surface as `only_b`. An LLM writes a neutral factual narrative strictly over these computed pairs — it never decides what differs, only explains it. Premium/pricing comparisons are intentionally excluded (out of scope).

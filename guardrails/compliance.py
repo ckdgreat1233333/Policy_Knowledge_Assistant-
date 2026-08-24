@@ -1,51 +1,74 @@
-"""Compliance-aligned tone management.
+"""Ethics, risk & governance guardrails for the insurance assistant.
 
-Enforces non-promissory language on every customer-facing string AFTER the
-LLM step, so a prompt-injected or drifted model output can never reach a
-customer promising guaranteed outcomes. Violations are logged for audit.
+Two enforcement layers:
+
+1. OUTPUT SCRUB  - every customer-facing string is scrubbed AFTER the LLM
+   step. A prompt-injected or drifted model can never promise a claim payout,
+   guarantee coverage, or hand out legal advice; violations are logged.
+
+2. SCOPE REFUSAL - questions outside the system's mandate (legal advice,
+   claim adjudication, pricing) are refused and routed to the right channel.
 """
 from __future__ import annotations
 
 import re
 
+# ── Banned claims (customer track): pattern -> safe replacement ──────────
 BANNED_PATTERNS: list[tuple[re.Pattern, str, str]] = [
-    (re.compile(r"\bguaranteed?\s+(?:returns?|profits?|income|growth)\b", re.I),
-     "market-linked returns that are not guaranteed",
-     "guaranteed returns claim"),
-    (re.compile(r"\bassured\s+(?:returns?|profits?|payouts?)\b", re.I),
-     "indicative returns that are not assured",
-     "assured returns claim"),
-    (re.compile(r"\brisks?[\s-]*free\b", re.I), "low-risk but never free of all risk", "risk-free claim"),
-    (re.compile(r"\bno\s+risk\b", re.I), "limited risk rather than zero risk", "no-risk claim"),
-    (re.compile(r"\bdefinitely\s+(?:will|shall|grow|double|earn)\b", re.I),
-     "may, subject to market conditions", "definitive outcome claim"),
-    (re.compile(r"\b(?:sure|certain)[\s-]*shot\b", re.I), "possible but uncertain", "sure-shot claim"),
-    (re.compile(r"\bmultibagger\b", re.I), "a potentially higher-return product",
-     "multibagger hype"),
-    (re.compile(r"\bdouble[sd]?\s+your\s+money\b", re.I),
-     "grow your money over time, subject to markets", "doubling promise"),
-    (re.compile(r"\byou\s+must\s+(?:invest|buy|purchase)\b", re.I),
-     "you may consider", "binding instruction"),
-    (re.compile(r"\binvest\s+now\s+before\b", re.I), "you may evaluate in your own time",
-     "urgency pressure"),
+    (re.compile(r"\byour\s+claim\s+(?:will|shall)\s+be\s+(?:approved|paid|settled)\b", re.I),
+     "your claim will be assessed as per the policy terms", "guaranteed claim approval"),
+    (re.compile(r"\b(?:we|the insurer)\s+(?:will|shall)?\s*definitely\s+(?:pay|approve|cover)\b", re.I),
+     "coverage is subject to policy terms and claim assessment", "definitive payout promise"),
+    (re.compile(r"\bguaranteed?\s+(?:coverage|payout|settlement|approval)\b", re.I),
+     "coverage that is always subject to policy terms", "guaranteed coverage claim"),
+    (re.compile(r"\ball\s+(?:your\s+)?(?:expenses|costs)\s+(?:will be|are)\s+covered\b", re.I),
+     "eligible expenses are covered per the policy limits and exclusions", "unlimited coverage claim"),
+    (re.compile(r"\bno\s+(?:deductible|exclusions|waiting\s+period)\b", re.I),
+     "reduced deductibles or waiting periods where applicable", "no-conditions claim"),
+    (re.compile(r"\brisks?[\s-]*free\b", re.I), "with limited risk rather than no risk", "risk-free claim"),
+    (re.compile(r"\blegally\s+(?:binding|guaranteed)\b", re.I), "described in the policy document", "legally binding framing"),
 ]
+
+# ── Scope refusals: the assistant never does these (out-of-scope by design)
+LEGAL_ADVICE_RE = re.compile(
+    r"\b(sue|suing|litigat\w*|legal\s+(?:opinion|advice|action|strategy)|"
+    r"court\s+case|tribunal\s+(?:outcome|decision)|should\s+i\s+(?:sue|go\s+to\s+court))\b", re.I)
+CLAIM_ADJUDICATION_RE = re.compile(
+    r"\b(approve|reject|deny|adjudicat\w+)\s+(my|this|the)?\s*(claim|hospitalization|hospitalisation)\b", re.I)
+PRICING_DECISION_RE = re.compile(
+    r"\b(quote|price)\s+(me\s+)?(a\s+)?(new\s+)?policy\b|\bgive\s+me\s+a\s+premium\b", re.I)
 
 CUSTOMER_DISCLAIMERS = [
-    "This is general financial guidance generated with AI assistance and does not "
-    "constitute investment advice or a recommendation to buy any specific product.",
-    "Market-linked products carry risk; past performance is not indicative of future "
-    "results and returns are never guaranteed.",
-    "Please consult a qualified relationship manager or SEBI-registered adviser before "
-    "making investment decisions.",
+    "This explanation is generated with AI assistance for general understanding "
+    "and is not legal advice, not a confirmation of coverage, and does not "
+    "guarantee any claim outcome.",
+    "The policy document, its wordings and endorsements prevail over this "
+    "summary. Please read your policy schedule carefully.",
+    "For decisions about buying, renewing or claiming, please confirm with a "
+    "licensed insurance advisor or our customer service team.",
 ]
 
-RM_DISCLAIMER = ("Internal decision-support only. Suitability verdicts are system-generated "
-                 "and require RM judgement; escalate-flagged items need documented supervisor "
-                 "approval before customer presentation.")
+BUSINESS_DISCLAIMER = (
+    "Internal decision support only. Interpretations must be verified against the "
+    "cited clause versions before customer communication; escalated items require "
+    "documented senior-underwriter sign-off."
+)
+
+REFUSAL_LEGAL = (
+    "I'm sorry, but I can't provide legal opinions, litigation guidance, or predict "
+    "how a court or tribunal would decide - those need a qualified professional. "
+    "I can explain what your policy wording says about this situation."
+)
+
+REFUSAL_CLAIM_DECISION = (
+    "Claim approval decisions are made only by the claims team after assessment of "
+    "documents and eligibility - I can't pre-judge an outcome. I can walk you through "
+    "what the policy covers and the claim process steps."
+)
 
 
-def enforce_non_promissory(text: str) -> tuple[str, list[str]]:
-    """Scrub banned claims. Returns (clean_text, violations)."""
+def enforce_safe_language(text: str) -> tuple[str, list[str]]:
+    """Scrub banned claims from LLM output. Returns (clean_text, violations)."""
     violations: list[str] = []
     if not text:
         return text, violations
@@ -57,5 +80,14 @@ def enforce_non_promissory(text: str) -> tuple[str, list[str]]:
     return text, violations
 
 
-def compliance_notes_for_track(track: str) -> list[str]:
-    return [RM_DISCLAIMER] if track == "rm" else list(CUSTOMER_DISCLAIMERS)
+def detect_scope_violation(question: str) -> tuple[str, str] | None:
+    """Return (refusal_kind, message) if the question is out of scope."""
+    if LEGAL_ADVICE_RE.search(question):
+        return ("refuse_legal", REFUSAL_LEGAL)
+    if CLAIM_ADJUDICATION_RE.search(question):
+        return ("refuse_claim", REFUSAL_CLAIM_DECISION)
+    return None
+
+
+def disclaimers_for_track(track: str) -> list[str]:
+    return [BUSINESS_DISCLAIMER] if track == "business" else list(CUSTOMER_DISCLAIMERS)

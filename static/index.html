@@ -3,578 +3,604 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Personalized Financial Advisory Assistant</title>
+<title>Policy &amp; Knowledge Management Assistant</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
-body{background:#0f172a;color:#e2e8f0;min-height:100vh}
-header{background:#1e293b;border-bottom:1px solid #1e293b;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
-header h1{color:#fff;font-size:18px;display:flex;align-items:center;gap:8px}
-header h1 span{background:#4f46e5;color:#c7d2fe;font-size:10px;padding:2px 8px;border-radius:12px}
+body{background:#0b1120;color:#e2e8f0;min-height:100vh}
+header{background:#111a2e;border-bottom:1px solid #1d2a44;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+header h1{color:#fff;font-size:17px;display:flex;align-items:center;gap:8px;font-weight:700}
+header h1 span{background:#2563eb;color:#dbeafe;font-size:9px;padding:2px 8px;border-radius:12px;text-transform:uppercase;letter-spacing:.5px}
 .user-badge{display:flex;align-items:center;gap:10px;font-size:13px}
-.user-badge .dot{width:8px;height:8px;border-radius:50%}
-.dot.customer{background:#10b981}
-.dot.officer{background:#818cf8}
-.logout-btn{background:#334155;color:#94a3b8;border:1px solid #334155;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px}
-.logout-btn:hover{background:#475569;color:#fff}
-.container{max-width:1200px;margin:0 auto;padding:20px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot.customer{background:#10b981}.dot.underwriter{background:#818cf8}
+.logout-btn{background:#1d2a44;color:#94a3b8;border:1px solid #263656;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px}
+.logout-btn:hover{background:#263656;color:#fff}
+.container{max-width:1180px;margin:0 auto;padding:20px}
 .hidden{display:none!important}
-.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
-.btn-primary{background:#4f46e5;color:#fff}
-.btn-primary:hover{background:#4338ca}
-.btn-danger{background:#dc2626;color:#fff}
-.btn-outline{background:#334155;color:#94a3b8;border:1px solid #475569}
+.btn{padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover:not(:disabled){background:#1d4ed8}
+.btn-outline{background:#16223c;color:#94a3b8;border:1px solid #263656}
 .btn-sm{padding:5px 10px;font-size:11px}
-.card{background:#1e293b;border:1px solid #1e293b;border-radius:16px;padding:20px;margin-bottom:16px}
-.card h3{font-size:14px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-.flex{display:flex}
-.flex-between{display:flex;justify-content:space-between;align-items:center}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}
-.text-xs{font-size:12px}.text-sm{font-size:13px}
-.text-slate{color:#94a3b8}.text-white{color:#fff}
-.text-emerald{color:#10b981}.text-rose{color:#f43f5e}.text-amber{color:#f59e0b}
-.font-bold{font-weight:700}.font-mono{font-family:'Courier New',monospace}
+.card{background:#111a2e;border:1px solid #1d2a44;border-radius:16px;padding:18px;margin-bottom:14px}
+.card h3{font-size:12px;color:#7c8db5;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.grid-2{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}
+.text-xs{font-size:12px}.text-sm{font-size:13px}.text-slate{color:#8ea0bf}.text-white{color:#fff}
+.text-emerald{color:#34d399}.text-rose{color:#fb7185}.text-amber{color:#fbbf24}.text-indigo{color:#818cf8}
+.font-bold{font-weight:700}.mono{font-family:'Cascadia Code','Courier New',monospace;font-size:12px}
 .badge{font-size:10px;padding:2px 8px;border-radius:12px;font-weight:600;display:inline-block}
-.badge-success{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.2)}
-.badge-warning{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
-.badge-danger{background:rgba(244,63,94,.15);color:#f43f5e;border:1px solid rgba(244,63,94,.2)}
-.badge-info{background:rgba(129,140,248,.15);color:#818cf8;border:1px solid rgba(129,140,248,.2)}
-input,select,textarea{background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;width:100%;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#4f46e5}
-label{font-size:12px;color:#94a3b8;display:block;margin-bottom:4px}
-.auth-container{max-width:420px;margin:80px auto;text-align:center}
-.auth-card{background:#1e293b;border:1px solid #1e293b;border-radius:16px;padding:32px;text-align:left;margin-top:20px}
-.auth-card .logo{background:#4f46e5;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px}
+.badge-success{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25)}
+.badge-warning{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+.badge-danger{background:rgba(251,113,133,.12);color:#fb7185;border:1px solid rgba(251,113,133,.25)}
+.badge-info{background:rgba(129,140,248,.12);color:#818cf8;border:1px solid rgba(129,140,248,.25)}
+input,select,textarea{background:#0b1120;border:1px solid #22304e;border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#2563eb}
+label{font-size:12px;color:#8ea0bf;display:block;margin-bottom:4px}
+.auth-wrap{max-width:430px;margin:70px auto;text-align:center}
+.auth-card{background:#111a2e;border:1px solid #1d2a44;border-radius:16px;padding:30px;text-align:left;margin-top:18px}
+.auth-logo{width:46px;height:46px;background:#2563eb;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px}
 .auth-card h2{text-align:center;font-size:20px;margin-bottom:4px}
-.auth-card p{text-align:center;color:#94a3b8;font-size:13px;margin-bottom:20px}
-.role-selector{display:flex;gap:8px;margin-bottom:16px}
-.role-btn{flex:1;padding:10px;border-radius:10px;border:1px solid #1e293b;background:#0f172a;color:#94a3b8;cursor:pointer;font-size:13px;text-align:center;transition:all .15s}
-.role-btn.active{background:rgba(79,70,229,.15);border-color:#4f46e5;color:#818cf8;font-weight:600}
-.form-group{margin-bottom:14px}
-.tabs{display:flex;gap:4px;padding:4px;background:#0f172a;border-radius:10px;border:1px solid #1e293b;margin-bottom:16px;flex-wrap:wrap}
-.tab-btn{padding:8px 14px;border-radius:8px;border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
-.tab-btn.active{background:#4f46e5;color:#fff}
-.chat-container{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
-.chat-pane{background:#1e293b;border:1px solid #1e2a3a;border-radius:16px;overflow:hidden}
-.chat-header{background:#0f172a;border-bottom:1px solid #1e2a3a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-.chat-msg{display:flex;gap:10px;max-width:100%;align-items:flex-start}
-.chat-msg.ai .bubble{background:#0f172a;color:#e2e8f0;border:1px solid #1e2a3a;padding:12px 16px;border-radius:10px;font-size:13px;line-height:1.7;word-break:break-word;white-space:pre-wrap}
-.chat-msg .avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.chat-msg .avatar.ai{background:#1a1b3a;border:1px solid #4f46e5;color:#818cf8}
-.clause-box{background:#0f172a;border:1px solid #4f46e5;border-radius:10px;padding:14px;position:relative;margin-top:8px}
-.clause-tag{position:absolute;right:8px;top:-8px;background:#1a1b3a;border:1px solid #4f46e5;color:#818cf8;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600}
-.clause-text{font-size:11px;color:#94a3b8;font-style:italic;line-height:1.6}
-.clause-auth{font-size:10px;color:#10b981;margin-top:6px}
-@keyframes bounce{0%,100%{opacity:0.4}50%{opacity:1}}
-.loading-dot{width:6px;height:6px;background:#818cf8;border-radius:50%;display:inline-block;animation:bounce .8s infinite}
-.spinner{width:32px;height:32px;border:3px solid #1e293b;border-top-color:#4f46e5;border-radius:50%;animation:spin .6s linear infinite;margin:40px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-.query-box{background:#0f172a;border:1px solid #4f46e5;border-radius:14px;padding:18px;margin-bottom:16px}
-.answer-block{background:#0f172a;border:1px solid #1e2a3a;border-radius:12px;padding:16px;margin-bottom:12px;line-height:1.7;font-size:13px;white-space:pre-wrap}
-.conf-meter{height:8px;background:#1e293b;border-radius:6px;overflow:hidden;margin-top:6px}
+.auth-card p.sub{text-align:center;color:#8ea0bf;font-size:13px;margin-bottom:18px}
+.role-selector{display:flex;gap:8px;margin-bottom:14px}
+.role-btn{flex:1;padding:10px;border-radius:10px;border:1px solid #22304e;background:#0b1120;color:#8ea0bf;cursor:pointer;font-size:13px;text-align:center;transition:.15s}
+.role-btn.active{background:rgba(37,99,235,.15);border-color:#2563eb;color:#93b4ff;font-weight:600}
+.form-group{margin-bottom:12px}
+.hint{font-size:11px;color:#5b6b8c;margin-top:10px;line-height:1.6}
+.tabs{display:flex;gap:4px;padding:4px;background:#0b1120;border-radius:10px;border:1px solid #1d2a44;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:8px 14px;border-radius:8px;border:none;background:transparent;color:#8ea0bf;cursor:pointer;font-size:12px;font-weight:600;transition:.15s}
+.tab-btn.active{background:#2563eb;color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{background:#16223c;border:1px solid #263656;color:#a9b7d4;border-radius:14px;padding:5px 11px;font-size:11px;cursor:pointer}
+.chip:hover{border-color:#2563eb;color:#dbeafe}
+.answer-block{background:#0b1120;border:1px solid #22304e;border-left:3px solid #2563eb;border-radius:10px;padding:14px 16px;line-height:1.75;font-size:13.5px;white-space:pre-wrap}
+.conf-meter{height:8px;background:#1d2a44;border-radius:6px;overflow:hidden;margin-top:6px}
 .conf-fill{height:100%;border-radius:6px;transition:width .4s}
-.conf-fill.high{background:#10b981}.conf-fill.medium{background:#f59e0b}.conf-fill.low{background:#f43f5e}
-.escalate-banner{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.35);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#fda4af}
-.escalate-banner strong{color:#f43f5e}
-.conflict-banner{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#fcd34d}
-.notfound-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:16px;font-size:13px;color:#fcd34d;line-height:1.6}
-@media(max-width:768px){.chat-container,.grid-2,.grid-3{grid-template-columns:1fr}}
+.conf-fill.high{background:#34d399}.conf-fill.medium{background:#fbbf24}.conf-fill.low{background:#fb7185}
+.banner{border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:13px;line-height:1.6}
+.banner strong{font-weight:700}
+.banner-answer{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);color:#a7f3d0}
+.banner-escalate{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);color:#fecdd3}
+.banner-refuse{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:#fde68a}
+.cite-chip{display:inline-block;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.4);color:#93b4ff;border-radius:6px;padding:3px 9px;font-size:11px;margin:3px 4px 0 0}
+.clause-box{background:#0b1120;border:1px solid #22304e;border-radius:10px;padding:12px 14px;margin-top:8px;position:relative}
+.clause-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.clause-text{font-size:12px;color:#a9b7d4;line-height:1.7}
+.trace-step{border-left:2px solid #263656;padding:8px 0 8px 14px;margin-left:6px;position:relative}
+.trace-step:before{content:'';position:absolute;left:-5px;top:12px;width:8px;height:8px;border-radius:50%;background:#2563eb}
+.trace-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#5b6b8c}
+.trace-body{font-size:12px;color:#a9b7d4;line-height:1.65;white-space:pre-wrap}
+table.tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.tbl th{color:#7c8db5;text-transform:uppercase;font-size:10px;letter-spacing:.5px;text-align:left;padding:8px;border-bottom:1px solid #22304e}
+table.tbl td{padding:9px 8px;border-bottom:1px solid #16223c;vertical-align:top;line-height:1.55}
+.chat-pane{display:flex;flex-direction:column;height:calc(100vh - 210px);min-height:420px}
+.chat-scroll{flex:1;overflow-y:auto;padding:6px 4px}
+.msg{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.msg .avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.msg.bot .avatar{background:#16223c;border:1px solid #2563eb;color:#93b4ff}
+.msg.me .avatar{background:#052e2b;border:1px solid #10b981;color:#6ee7b7}
+.bubble{max-width:82%;border-radius:10px;padding:12px 15px;font-size:13px;line-height:1.7;white-space:pre-wrap}
+.msg.bot .bubble{background:#0b1120;border:1px solid #22304e;color:#dbe4f3}
+.msg.me .bubble{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25)}
+.disc-footer{font-size:10.5px;color:#5b6b8c;margin-top:8px;line-height:1.55;border-top:1px dashed #22304e;padding-top:7px}
+.chat-input{display:flex;gap:8px;padding-top:10px;border-top:1px solid #1d2a44}
+@keyframes bounce{0%,100%{opacity:.35}50%{opacity:1}}
+.loading-dot{width:6px;height:6px;background:#818cf8;border-radius:50%;display:inline-block;animation:bounce .8s infinite;margin-right:3px}
+.empty{color:#5b6b8c;font-size:12px;text-align:center;padding:30px 10px;line-height:1.7}
+@media(max-width:800px){.grid-2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<header class="hidden" id="hdr">
+  <h1>🛡️ Policy Knowledge Assistant <span id="hdrPortal">business track</span></h1>
+  <div class="user-badge">
+    <span class="dot" id="hdrDot"></span><span id="hdrUser"></span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</header>
 <div id="app"></div>
 <script>
-const API = 'http://127.0.0.1:8000';
-let state = { user: null, view: 'login', officerTab: 'rm', customers: [], activeCustomer: null,
-              activeProfile: null, rmResult: null, logs: [] };
+const API = window.location.origin;
+let state = { user:null, view:'login', portal:'underwriter', authMode:'login',
+              uwTab:'query', cuTab:'ask', busy:false,
+              bizResult:null, freshness:null, updates:[], sessions:[], logs:[],
+              policies:[], chat:[], cmpA:'', cmpB:'', cmpResult:null };
 
 async function api(method, path, body) {
-  const opts = { method, headers: {} };
-  if (body) {
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
-  }
+  const opts = { method, headers:{} };
+  if (body !== undefined) { opts.headers['Content-Type']='application/json'; opts.body = JSON.stringify(body); }
   const res = await fetch(API + path, opts);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const data = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(data.detail || res.statusText);
+  return data;
 }
+function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+function confLabel(c){ return c>=0.7?'high':(c>=0.45?'medium':'low'); }
+function confColor(l){ return l==='high'?'#34d399':(l==='medium'?'#fbbf24':'#fb7185'); }
 
-async function loadLogs() {
-  try {
-    const l = await api('GET', '/api/audit-logs');
-    state.logs = l.logs || [];
-  } catch(e) { console.warn(e); }
+// ─── AUTH ───
+async function doLogin(){
+  const u=document.getElementById('au').value.trim(), p=document.getElementById('ap').value;
+  try{
+    const r = await api('POST','/api/auth/login',{username:u,password:p,portalType:state.portal});
+    state.user=r.user; state.view = state.portal==='underwriter'?'uw':'customer';
+    enter();
+  }catch(e){ document.getElementById('authErr').textContent=e.message; }
 }
-
-function esc(str) {
-  const d = document.createElement('div');
-  d.textContent = str == null ? '' : String(str);
-  return d.innerHTML;
+async function doRegister(){
+  const u=document.getElementById('ru').value.trim(), n=document.getElementById('rn').value.trim(),
+        e=document.getElementById('re').value.trim(), p=document.getElementById('rp').value;
+  try{
+    const r=await api('POST','/api/auth/register',{username:u,fullName:n,email:e,password:p,portalType:state.portal});
+    state.user=r.user; state.view = state.portal==='underwriter'?'uw':'customer';
+    enter();
+  }catch(err){ document.getElementById('authErr').textContent=err.message; }
 }
-
-// ─── Login / Register ───
-function renderLogin() {
-  document.getElementById('app').innerHTML = `
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="logo">&#9878;</div>
-        <h2>Personalized Financial Advisory Assistant</h2>
-        <p>Banking domain · explainable, compliance-aligned guidance</p>
-        <div class="role-selector" id="role-selector">
-          <button class="role-btn" data-role="customer">Customer</button>
-          <button class="role-btn active" data-role="officer">Relationship Manager</button>
-        </div>
-        <div class="form-group"><label>Username</label><input type="text" id="login-username" placeholder="username" value="admin"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="password" value="admin123"></div>
-        <button class="btn btn-primary" style="width:100%;padding:12px" id="login-btn">Sign In</button>
-        <p style="text-align:center;margin-top:12px;font-size:12px;color:#64748b">New user? <a href="#" id="show-register" style="color:#818cf8">Create account</a></p>
-        <p style="text-align:center;margin-top:16px;font-size:10px;color:#64748b;font-style:italic">"In financial advisory, explainability is more important than intelligence."</p>
-      </div>
-    </div>`;
-
-  let role = 'officer';
-  document.querySelectorAll('.role-btn').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.role-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    role = b.dataset.role;
-  }));
-
-  document.getElementById('login-btn').addEventListener('click', async () => {
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
-    if (!username || !password) return alert('Please enter username and password');
-    try {
-      const res = await api('POST', '/api/auth/login', { username, password, portalType: role });
-      state.user = res.user;
-      state.user.role = role;
-      renderApp();
-    } catch(e) { alert('Login failed: ' + e.message); }
-  });
-
-  document.getElementById('show-register').addEventListener('click', (e) => {
-    e.preventDefault();
-    showRegister();
-  });
-}
-
-function showRegister() {
-  document.getElementById('app').innerHTML = `
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="logo">&#9878;</div>
-        <h2>Create Account</h2>
-        <p>Register for the advisory assistant</p>
-        <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Jane Doe"></div>
-        <div class="form-group"><label>Username</label><input type="text" id="reg-username" placeholder="janedoe"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="jane@example.com"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Min 6 characters"></div>
-        <div class="role-selector" id="reg-role-selector">
-          <button class="role-btn active" data-role="customer">Customer</button>
-          <button class="role-btn" data-role="officer">Relationship Manager</button>
-        </div>
-        <button class="btn btn-primary" style="width:100%;padding:12px" id="reg-btn">Create Account</button>
-        <p style="text-align:center;margin-top:12px;font-size:12px;color:#64748b">Already have an account? <a href="#" id="show-login" style="color:#818cf8">Sign in</a></p>
-      </div>
-    </div>`;
-
-  let role = 'customer';
-  document.querySelectorAll('#reg-role-selector .role-btn').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('#reg-role-selector .role-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    role = b.dataset.role;
-  }));
-
-  document.getElementById('reg-btn').addEventListener('click', async () => {
-    const name = document.getElementById('reg-name').value.trim();
-    const username = document.getElementById('reg-username').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
-    if (!name || !username || !email || !password) return alert('Please fill all required fields');
-    try {
-      await api('POST', '/api/auth/register', { username, fullName: name, email, password, portalType: role });
-      const res = await api('POST', '/api/auth/login', { username, password, portalType: role });
-      state.user = res.user;
-      state.user.role = role;
-      renderApp();
-    } catch(e) { alert('Registration failed: ' + e.message); }
-  });
-
-  document.getElementById('show-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    renderLogin();
-  });
-}
-
-// ─── App shell ───
-function renderApp() {
-  const isRM = state.user.role !== 'customer';
-  document.getElementById('app').innerHTML = `
-    <header>
-      <h1>&#9878; Personalized Financial Advisory Assistant <span>${isRM ? 'RM Decision Support' : 'Customer Guidance'}</span></h1>
-      <div class="user-badge">
-        <span class="dot ${isRM ? 'officer' : 'customer'}"></span>
-        <span>${esc(state.user.name || state.user.username)}</span>
-        <button class="logout-btn" id="logout-btn">Logout</button>
-      </div>
-    </header>
-    <div class="container" id="main-content"></div>`;
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    await api('POST', '/api/auth/logout').catch(() => {});
-    state.user = null;
-    renderLogin();
-  });
-  if (isRM) renderOfficerView();
-  else renderCustomerView();
-}
-
-// ═══════ BUSINESS TRACK — RM DECISION SUPPORT ═══════
-function renderOfficerView() {
-  const tabs = [
-    { id: 'rm', label: 'RM Advisory' },
-    { id: 'logs', label: 'Advisory Audit Ledger' }
-  ];
-  const mc = document.getElementById('main-content');
-  mc.innerHTML = `<div class="tabs" id="off-tabs">${tabs.map(t =>
-    `<button class="tab-btn ${t.id === state.officerTab ? 'active' : ''}" data-tab="${t.id}">${t.label}</button>`
-  ).join('')}</div><div id="off-body"></div>`;
-  document.querySelectorAll('#off-tabs .tab-btn').forEach(b => b.addEventListener('click', () => {
-    state.officerTab = b.dataset.tab;
-    document.querySelectorAll('#off-tabs .tab-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    showOfficerTab();
-  }));
-  showOfficerTab();
-}
-
-function showOfficerTab() {
-  const body = document.getElementById('off-body');
-  if (state.officerTab === 'rm') renderRMAdvisory(body);
-  else renderAuditLedger(body);
-}
-
-function verdictBadge(v) {
-  const map = { eligible: 'badge-success', escalate: 'badge-warning', blocked: 'badge-danger' };
-  return `<span class="badge ${map[v] || 'badge-info'}">${esc(String(v))}</span>`;
-}
-
-function riskBadge(r) {
-  const map = { low: 'badge-success', moderate: 'badge-warning', high: 'badge-danger' };
-  return `<span class="badge ${map[r] || 'badge-info'}">${esc(String(r))} risk</span>`;
-}
-
-function kycBadge(s) {
-  return `<span class="badge ${s === 'verified' ? 'badge-success' : 'badge-danger'}">KYC ${esc(s)}</span>`;
-}
-
-async function ensureCustomers() {
-  if (!state.customers.length) {
-    const res = await api('GET', '/api/advisory/customers');
-    state.customers = res.customers || [];
+function quickLogin(u,p){ document.getElementById(state.authMode==='login'?'au':'ru') && (document.getElementById('au').value=u);
+  document.getElementById('ap').value=p; doLogin(); }
+function logout(){ state={...state,user:null,view:'login',bizResult:null,chat:[],cmpResult:null,policies:[]}; render(); }
+function pickPortal(p){ state.portal=p; render(); }
+function pickAuthMode(m){ state.authMode=m; render(); }
+</script>
+<script>
+// ─── RENDER DISPATCH ───
+function render(){
+  const app=document.getElementById('app');
+  document.getElementById('hdr').classList.toggle('hidden', state.view==='login');
+  if(state.view!=='login'){
+    document.getElementById('hdrPortal').textContent = state.portal==='underwriter'?'business track':'customer track';
+    document.getElementById('hdrDot').className='dot '+state.portal;
+    document.getElementById('hdrUser').textContent=(state.user&&state.user.name)||'guest';
   }
+  app.innerHTML = state.view==='login'?renderLogin():
+                  state.portal==='underwriter'?renderUW():renderCU();
 }
 
-function featChip(label, value) {
-  return `<div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:8px 10px">
-    <div class="text-xs text-slate">${label}</div><div class="text-white font-bold text-sm">${value}</div></div>`;
-}
-
-function renderRMAdvisory(el) {
-  el.innerHTML = `<div class="spinner"></div>`;
-  ensureCustomers().then(() => {
-    el.innerHTML = `
-      <div class="chat-container">
-        <div class="card">
-          <h3>Customers</h3>
-          <input type="text" id="cust-search" placeholder="Search name or ID..." class="mb-2">
-          <div id="cust-list" style="max-height:560px;overflow-y:auto"></div>
-        </div>
-        <div id="rm-panel"><p class="text-sm text-slate">Select a customer to build their advisory profile.</p></div>
-      </div>`;
-
-    const drawList = (q) => {
-      const items = state.customers.filter(c =>
-        !q || (c.name || '').toLowerCase().includes(q) || (c.customer_id || '').toLowerCase().includes(q));
-      document.getElementById('cust-list').innerHTML = items.slice(0, 80).map(c => `
-        <div class="cust-row" data-cid="${esc(c.customer_id)}" style="padding:10px;border-radius:8px;border:1px solid #1e293b;margin-bottom:6px;cursor:pointer;background:${c.customer_id === state.activeCustomer ? 'rgba(79,70,229,.12)' : '#0f172a'}">
-          <div class="flex-between">
-            <span style="font-size:13px;font-weight:600">${esc(c.name)}</span>
-            <span class="font-mono text-xs text-slate">${esc(c.customer_id)}</span>
-          </div>
-          <div class="flex mt-2" style="gap:6px;align-items:center;flex-wrap:wrap">
-            <span class="badge badge-info">${esc(c.stated_risk_appetite)}</span>
-            <span class="badge ${c.kyc_status === 'verified' ? 'badge-success' : 'badge-danger'}">${esc(c.kyc_status)}</span>
-            <span class="text-xs text-slate">${esc(c.city)} · ${esc(String(c.age))}y</span>
-          </div>
-        </div>`).join('') || '<p class="text-xs text-slate">No matches.</p>';
-      document.querySelectorAll('.cust-row').forEach(row =>
-        row.addEventListener('click', () => selectCustomer(row.dataset.cid)));
-    };
-    drawList('');
-    document.getElementById('cust-search').addEventListener('input', e => drawList(e.target.value.toLowerCase()));
-
-    if (state.activeCustomer) selectCustomer(state.activeCustomer);
-  }).catch(e => {
-    el.innerHTML = `<div class="notfound-box">Advisory service unavailable: ${esc(e.message)}</div>`;
-  });
-}
-
-async function selectCustomer(cid) {
-  state.activeCustomer = cid;
-  const panel = document.getElementById('rm-panel');
-  if (!panel) return;
-  panel.innerHTML = `<div class="spinner"></div>`;
-  try {
-    const res = await api('GET', '/api/advisory/customers/' + encodeURIComponent(cid) + '/profile');
-    state.activeProfile = res;
-  } catch(e) {
-    panel.innerHTML = `<div class="notfound-box">Failed to load profile: ${esc(e.message)}</div>`;
-    return;
-  }
-  document.querySelectorAll('.cust-row').forEach(r =>
-    r.style.background = r.dataset.cid === cid ? 'rgba(79,70,229,.12)' : '#0f172a');
-  renderRMPanel();
-}
-
-function renderRMPanel() {
-  const data = state.activeProfile;
-  const p = data && data.profile;
-  const panel = document.getElementById('rm-panel');
-  if (!panel || !p) return;
-  panel.innerHTML = `
-    <div class="card">
-      <div class="flex-between mb-2">
-        <h3 style="margin:0">${esc(p.name)} <span class="text-xs text-slate font-mono">${esc(p.customer_id)}</span></h3>
-        <div class="flex" style="gap:6px">
-          ${kycBadge(p.kyc_status)}
-          <span class="badge badge-info">${esc(p.segment || 'unsegmented')}</span>
-        </div>
-      </div>
-      <p class="text-sm text-slate" style="line-height:1.7">${esc(data.summary)}</p>
-      ${p.risk_alignment_note ? `<div class="conflict-banner mt-3">${esc(p.risk_alignment_note)}</div>` : ''}
-      <div class="grid-3 mt-3">
-        ${featChip('Savings rate', Math.round((p.savings_rate || 0) * 100) + '%')}
-        ${featChip('Monthly surplus', '&#8377;' + Number(p.monthly_surplus || 0).toLocaleString('en-IN'))}
-        ${featChip('Emergency buffer', (p.emergency_buffer_months || 0).toFixed(1) + ' mo')}
-        ${featChip('EMI burden', Math.round((p.emi_burden || 0) * 100) + '%')}
-        ${featChip('Computed capacity', esc(p.computed_risk_capacity || ''))}
-        ${featChip('Life stage', esc((p.life_stage || '').replace(/_/g, ' ')))}
-      </div>
-      ${p.protection_gap ? '<div class="conflict-banner mt-3">Protection gap detected: no life or health cover on record. Cover-first guidance advised.</div>' : ''}
-      ${p.first_time_investor ? '<div class="mt-2"><span class="badge badge-warning">First-time investor</span></div>' : ''}
-    </div>
-    <div class="query-box">
-      <div class="flex-between mb-2">
-        <h3 style="margin:0;color:#818cf8">Advisory Query</h3>
-        <span class="badge badge-info">engine decides · AI explains</span>
-      </div>
-      <div class="flex" style="gap:8px">
-        <textarea id="rm-query-input" rows="2" placeholder="e.g. Which products suit this customer for retirement planning?" style="flex:1"></textarea>
-        <button class="btn btn-primary" id="rm-query-btn" style="align-self:stretch">Advise</button>
-      </div>
-    </div>
-    <div id="rm-result"></div>`;
-
-  if (state.rmResult && state.rmResult.customer_id === p.customer_id) {
-    renderRmResult(document.getElementById('rm-result'), state.rmResult);
-  }
-
-  document.getElementById('rm-query-btn').addEventListener('click', async () => {
-    const q = document.getElementById('rm-query-input').value.trim();
-    if (!q) return alert('Enter an advisory question for this customer.');
-    const btn = document.getElementById('rm-query-btn');
-    btn.disabled = true; btn.textContent = 'Analyzing…';
-    try {
-      const res = await api('POST', '/api/advisory/rm-query', { customer_id: p.customer_id, question: q });
-      state.rmResult = res;
-      renderRmResult(document.getElementById('rm-result'), res);
-    } catch(e) { alert('Failed: ' + e.message); }
-    btn.disabled = false; btn.textContent = 'Advise';
-  });
-}
-
-function recCard(r) {
-  const scoreCls = r.score >= 0.66 ? 'high' : r.score >= 0.4 ? 'medium' : 'low';
+function renderLogin(){
+  const reg=state.authMode==='register';
   return `
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:14px;margin-bottom:8px">
-      <div class="flex-between mb-2">
-        <div class="flex" style="gap:6px;align-items:center">
-          <strong style="font-size:13px;color:#fff">${esc(r.name)}</strong>
-          ${riskBadge(r.risk_level)}${verdictBadge(r.verdict)}
-        </div>
-        <span class="font-mono text-xs text-slate">score ${(r.score * 100).toFixed(0)}%</span>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">🛡️</div>
+      <h2>Policy &amp; Knowledge Assistant</h2>
+      <p class="sub">Grounded policy answers for insurance teams &amp; customers</p>
+      <div class="role-selector">
+        <div class="role-btn ${state.portal==='underwriter'?'active':''}" onclick="pickPortal('underwriter')">🏢 Underwriter / Staff</div>
+        <div class="role-btn ${state.portal==='customer'?'active':''}" onclick="pickPortal('customer')">👤 Customer</div>
       </div>
-      <div class="conf-meter"><div class="conf-fill ${scoreCls}" style="width:${Math.round(r.score * 100)}%"></div></div>
-      ${(r.reasons || []).map(x => `<p class="text-xs text-rose mt-2">&#10007; ${esc(x)}</p>`).join('')}
-      ${(r.warnings || []).map(x => `<p class="text-xs text-amber mt-2">&#9888; ${esc(x)}</p>`).join('')}
-      ${(r.citation_refs && r.citation_refs.length)
-        ? `<div class="flex mt-2" style="gap:4px;flex-wrap:wrap">${r.citation_refs.map(cr =>
-            `<span class="badge badge-info font-mono" style="font-size:9px">${esc(cr)}</span>`).join('')}</div>`
-        : ''}
-    </div>`;
+      ${reg?`
+      <div class="form-group"><label>Username</label><input id="ru" placeholder="username"></div>
+      <div class="form-group"><label>Full name</label><input id="rn" placeholder="Your name"></div>
+      <div class="form-group"><label>Email</label><input id="re" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input id="rp" type="password" placeholder="min 6 characters"></div>`
+      :`
+      <div class="form-group"><label>Username</label><input id="au" value="${state.prefill||''}" placeholder="username"></div>
+      <div class="form-group"><label>Password</label><input id="ap" type="password" placeholder="••••••••"></div>`}
+      <div class="text-xs text-rose mb-2" id="authErr"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="${reg?'doRegister()':'doLogin()'}">${reg?'Create account':'Sign in'}</button>
+      <p class="text-xs text-slate mt-3" style="text-align:center;cursor:pointer" onclick="pickAuthMode('${reg?'login':'register'}')">
+        ${reg?'Already registered? Sign in':'New user? Create an account'}</p>
+      <p class="hint">Demo logins · Underwriter: <b class="mono">underwriter / underwriter123</b><br>Customer: <b class="mono">customer / customer123</b></p>
+    </div>
+  </div>`;
 }
 
-function renderRmResult(el, res) {
-  if (!el) return;
-  const recs = res.recommendations || [];
-  const eligible = recs.filter(r => r.verdict === 'eligible');
-  const escalated = recs.filter(r => r.verdict === 'escalate');
+function quickFill(u){ state.authMode='login'; state.prefill=u; render();
+  setTimeout(()=>{ document.getElementById('au').value=u; document.getElementById('ap').focus(); },30); }
 
-  el.innerHTML = `
-    ${res.needs_human_override ? `
-      <div class="escalate-banner"><strong>&#9888; Human override required</strong>${res.escalation_reason ? ' — ' + esc(res.escalation_reason) : ''}
-        <div class="text-xs mt-2">Escalated items may only be presented to the customer after documented supervisor approval (SEBI suitability obligation).</div>
-      </div>` : ''}
-    <div class="card">
-      <h3>Recommendation Summary</h3>
-      <div class="answer-block">${esc(res.narrative || '')}</div>
-      ${(res.compliance_notes && res.compliance_notes.length)
-        ? `<h3>Risk Flags</h3>` + res.compliance_notes.map(n =>
-            `<p class="text-xs text-amber mb-2">&#9888; ${esc(n)}</p>`).join('')
-        : ''}
-    </div>
-    <div class="card">
-      <div class="flex-between mb-2">
-        <h3 style="margin:0">Suitable Products (${eligible.length})</h3>
-        <span class="text-xs text-slate">verdicts computed by deterministic suitability engine</span>
-      </div>
-      ${eligible.map(recCard).join('') || '<p class="text-xs text-slate">No eligible products for this query.</p>'}
-    </div>
-    ${escalated.length ? `<div class="card"><h3>Escalations (${escalated.length})</h3>${escalated.map(recCard).join('')}</div>` : ''}
-    <div class="notfound-box" style="border-color:rgba(129,140,248,.35);color:#a5b4fc">${esc((res.disclaimers || [])[0] || '')}</div>`;
+function enter(){
+  loadPolicies();
+  if(state.portal==='underwriter'){ loadFreshness(); }
+  render();
+}// ─── UNDERWRITER CONSOLE ───
+function uwTab(t){ state.uwTab=t; render(); if(t==='fresh')loadFreshness(); if(t==='audit')loadSessions(); }
 
-  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function renderUW(){
+  return `
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn ${state.uwTab==='query'?'active':''}" onclick="uwTab('query')">Query Console</button>
+      <button class="tab-btn ${state.uwTab==='fresh'?'active':''}" onclick="uwTab('fresh')">Knowledge Freshness</button>
+      <button class="tab-btn ${state.uwTab==='audit'?'active':''}" onclick="uwTab('audit')">Audit Trail</button>
+    </div>
+    <div id="uwBody">${
+      state.uwTab==='query'?uwQueryHTML():
+      state.uwTab==='fresh'?`<div class="card"><div class="empty"><span class="loading-dot"></span> Loading freshness…</div></div>`:
+      `<div class="card"><div class="empty"><span class="loading-dot"></span> Loading audit trail…</div></div>`
+    }</div>
+  </div>`;
 }
 
-function renderAuditLedger(el) {
-  el.innerHTML = `<div class="spinner"></div>`;
-  loadLogs().then(() => {
-    el.innerHTML = `
+function uwQueryHTML(){
+  return `
+  <div class="grid-2">
+    <div>
       <div class="card">
-        <div class="flex-between mb-3">
-          <h3 style="margin:0">Advisory Audit Ledger</h3>
-          <span class="badge badge-success">Accountability Trail</span>
+        <h3>Policy Query</h3>
+        <textarea id="qBox" rows="6" placeholder="e.g. Is maternity covered under SecurePlus and after what waiting period?"></textarea>
+        <button class="btn btn-primary mt-3" style="width:100%" id="askBtn" onclick="askQuestion()">Run ReAct Agent →</button>
+        <div class="chips">
+          <span class="chip" onclick="fillQ(this)">Is dental treatment covered under SecurePlus?</span>
+          <span class="chip" onclick="fillQ(this)">What changed in maternity cover in the latest health policy version?</span>
+          <span class="chip" onclick="fillQ(this)">Zero depreciation claim limit and vehicle age eligibility?</span>
+          <span class="chip" onclick="fillQ(this)">What happens if a customer misses the health renewal date?</span>
+          <span class="chip" onclick="fillQ(this)">Is suicide within 12 months covered under LifeShield?</span>
         </div>
-        <div style="max-height:600px;overflow-y:auto">
-          ${state.logs.map(l => `
-            <div style="background:#0f172a;padding:14px;border-radius:10px;border:1px solid #1e293b;margin-bottom:8px">
-              <div class="flex-between">
-                <div class="flex" style="gap:8px;align-items:center">
-                  <span style="font-size:12px;font-weight:600">${esc(l.actor)}</span>
-                  <span class="badge badge-info" style="font-size:9px">${esc(l.eventType)}</span>
-                  <span class="badge ${l.riskLevel === 'high' ? 'badge-danger' : l.riskLevel === 'medium' ? 'badge-warning' : 'badge-success'}">${esc(l.riskLevel)}</span>
-                </div>
-                <span style="font-size:11px;color:#64748b;font-family:monospace">${esc(l.timestamp)}</span>
-              </div>
-              <p style="font-size:12px;color:#94a3b8;margin-top:6px">${esc(l.details)}</p>
-            </div>`).join('') || '<p class="text-xs text-slate">No entries yet.</p>'}
+      </div>
+      <div class="card">
+        <h3>How answers are produced</h3>
+        <p class="text-xs text-slate" style="line-height:1.85">
+        1 · Intent classified → 2 · clauses retrieved semantically (threshold-gated) →
+        3 · completeness + version/freshness validated → 4 · grounded generation,
+        citations validated → 5 · deterministic decision: <b class="text-emerald">answer</b>,
+        <b class="text-amber">escalate</b> or refuse.<br><br>
+        Ambiguous, low-confidence or critically-stale evidence always routes to a senior underwriter.</p>
+      </div>
+    </div>
+    <div id="bizResult">${state.bizResult?bizResultHTML(state.bizResult):
+      '<div class="card"><div class="empty">Ask a policy question to see retrieval,<br>agent reasoning, citations, confidence and escalation.</div></div>'}</div>
+  </div>`;
+}
+function fillQ(el){ document.getElementById('qBox').value=el.textContent; }
+
+async function askQuestion(){
+  const q=document.getElementById('qBox').value.trim();
+  if(!q||state.busy) return;
+  state.busy=true;
+  document.getElementById('askBtn').disabled=true;
+  document.getElementById('bizResult').innerHTML='<div class="card"><div class="empty"><span class="loading-dot"></span><span class="loading-dot" style="animation-delay:.15s"></span><span class="loading-dot" style="animation-delay:.3s"></span>&nbsp; Retrieving clauses &amp; reasoning…</div></div>';
+  try{
+    state.bizResult=await api('POST','/api/business/query',{question:q});
+    state.busy=false;
+    document.getElementById('bizResult').innerHTML=bizResultHTML(state.bizResult);
+  }catch(e){
+    state.busy=false;
+    document.getElementById('bizResult').innerHTML=`<div class="banner banner-refuse">Request failed: ${esc(e.message)}</div>`;
+  }
+  document.getElementById('askBtn').disabled=false;
+}
+function bizResultHTML(r){
+  const cls=r.decision==='answer'?'banner-answer':(r.decision==='escalate'?'banner-escalate':'banner-refuse');
+  const icon=r.decision==='answer'?'✓':(r.decision==='escalate'?'⚠':'⊘');
+  const title=r.decision==='answer'?'Source-based answer':
+              (r.decision==='escalate'?'Escalated to senior underwriter (human-in-the-loop)':'Out of scope — refused');
+  let h=`
+  <div class="banner ${cls}"><strong>${icon} ${title}</strong>${r.escalation_reason?`<br>${esc(r.escalation_reason)}`:''}</div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center" class="mb-2">
+      <span class="text-xs text-slate">QUERY · intent</span><span class="badge badge-info">${esc(r.intent)}</span></div>
+    <p class="text-sm text-white mb-2">${esc(r.question)}</p>
+    <div class="text-xs text-slate">Confidence ${(r.confidence*100).toFixed(0)}%</div>
+    <div class="conf-meter"><div class="conf-fill ${confLabel(r.confidence)}" style="width:${Math.max(4,r.confidence*100)}%"></div></div>
+    <div class="answer-block mt-3">${esc(r.narrative)}</div>
+    ${r.citations.length?`<div class="mt-3"><span class="text-xs text-slate">CITED SOURCES</span><br>${
+      r.citations.map(c=>`<span class="cite-chip mono">${esc(c.document_id)} §${esc(c.clause_ref)} · ${esc(c.version)}</span>`).join('')}</div>`:''}
+    ${r.disclaimers.map(d=>`<p class="disc-footer">${esc(d)}</p>`).join('')}
+    ${r.compliance_notes.length?`<div class="mt-3"><span class="text-xs text-slate">COMPLIANCE NOTES</span>${
+      r.compliance_notes.map(n=>`<p class="text-xs text-indigo mt-1">▸ ${esc(n)}</p>`).join('')}</div>`:''}
+  </div>`;
+  if(r.reasoning_trace&&r.reasoning_trace.length){
+    h+=`<div class="card"><h3>ReAct Reasoning Trace</h3>${
+      r.reasoning_trace.map(s=>`
+      <div class="trace-step">
+        <div class="text-xs mb-2"><span class="badge badge-info">STEP ${s.step_no}</span>
+          <span class="mono text-slate">${esc(s.action)}${s.action_input?`: ${esc(String(s.action_input).slice(0,70))}`:''}</span></div>
+        <div class="trace-label">Thought</div><div class="trace-body mb-2">${esc(s.thought)}</div>
+        <div class="trace-label">Observation</div><div class="trace-body">${esc(s.observation)}</div>
+      </div>`).join('')}</div>`;
+  }
+  if(r.retrieved_clauses&&r.retrieved_clauses.length){
+    h+=`<div class="card"><h3>Retrieved Policy Clauses (${r.retrieved_clauses.length})</h3>${
+      r.retrieved_clauses.map(c=>`
+      <div class="clause-box">
+        <div class="clause-head">
+          <span class="cite-chip mono">${esc(c.document_id)} §${esc(c.clause_ref)}</span>
+          <span>
+            <span class="badge badge-info">${esc(c.doc_type)}</span>
+            <span class="badge badge-success">${esc(c.version)}</span>
+            <span class="badge ${c.freshness==='fresh'?'badge-success':(c.freshness==='stale'?'badge-warning':'badge-danger')}">${esc(c.freshness)}</span>
+            <span class="text-xs text-slate mono">sim ${Number(c.similarity).toFixed(2)}</span>
+          </span>
         </div>
-      </div>`;
-  });
+        <p class="text-xs text-slate mb-2">${esc(c.title)} · effective ${esc(c.effective_date||'n/a')}</p>
+        <p class="clause-text">${esc(c.text)}</p>
+      </div>`).join('')}</div>`;
+  }
+  if(r.stale_warnings&&r.stale_warnings.length){
+    h+=`<div class="banner banner-refuse"><strong>⏰ Freshness warnings</strong>${
+      r.stale_warnings.map(w=>`<br>• ${esc(w)}`).join('')}</div>`;
+  }
+  if(r.suggested_followups&&r.suggested_followups.length){
+    h+=`<div class="chips">${
+      r.suggested_followups.map(f=>`<span class="chip" onclick="followUp(this.textContent)">${esc(f)}</span>`).join('')}</div>`;
+  }
+  return h;
+}
+function followUp(t){ document.getElementById('qBox').value=t; askQuestion(); }
+// ─── FRESHNESS DASHBOARD ───
+async function reingest(){
+  if(state.busy) return; state.busy=true;
+  const btn=document.getElementById('reingestBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Re-scanning…'; }
+  try{
+    const r=await api('POST','/api/knowledge/reingest',{});
+    if(r.added&&r.added.length){ await loadPolicies(); }
+    await loadFreshness();
+    state.toast=`Re-scan complete: ${r.documents} documents, ${r.chunks} clauses`+(r.added.length?` · added: ${r.added.join(', ')}`:'');
+  }catch(e){ state.toast='Re-scan failed: '+e.message; }
+  state.busy=false;
+  if(document.getElementById('uwBody')) document.getElementById('uwBody').innerHTML=freshHTML();
+}
+function toastHTML(){
+  if(!state.toast) return '';
+  return `<div class="banner banner-answer">${esc(state.toast)}</div>`;
+}
+async function loadFreshness(){
+  try{
+    const d=await api('GET','/api/knowledge/freshness');
+    state.freshness=d; state.updates=d.updates||[];
+  }catch(e){ state.freshness={documents:[],counts:{},updates:[]}; }
+  if(state.view==='uw'&&state.uwTab==='fresh'){
+    document.getElementById('uwBody').innerHTML=freshHTML();
+  }
 }
 
-// ═══════ CUSTOMER TRACK — GOAL-BASED GUIDANCE ═══════
-const GOALS = [
-  { id: 'education', label: "Children's Education" },
-  { id: 'retirement', label: 'Retirement Corpus' },
-  { id: 'wealth', label: 'Wealth Creation' },
-  { id: 'safety', label: 'Emergency & Safety Buffer' },
-  { id: 'tax', label: 'Tax Saving' }
-];
-
-function renderCustomerView() {
-  const mc = document.getElementById('main-content');
-  mc.innerHTML = `<div id="cust-body"></div>`;
-  renderGoalAdvisory(document.getElementById('cust-body'));
+function freshHTML(){
+  const f=state.freshness||{documents:[],counts:{}};
+  const bstat=s=>s==='fresh'?'badge-success':(s==='stale'?'badge-warning':'badge-danger');
+  return `
+  ${toastHTML()}
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+    <div>
+      <h3 style="margin-bottom:4px">Corpus Sync</h3>
+      <p class="text-xs text-slate">Drop new/updated policy files into <span class="mono">data/policies/</span> then click re-scan — no restart needed.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" id="reingestBtn" onclick="reingest()">⟳ Re-scan corpus</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px">
+    <div class="card" style="margin:0;text-align:center"><div class="text-sm font-bold text-emerald" style="font-size:26px">${f.counts.fresh||0}</div><div class="text-xs text-slate mt-2">FRESH (≤365d)</div></div>
+    <div class="card" style="margin:0;text-align:center"><div class="text-sm font-bold text-amber" style="font-size:26px">${f.counts.stale||0}</div><div class="text-xs text-slate mt-2">STALE (&gt;365d) — warned</div></div>
+    <div class="card" style="margin:0;text-align:center"><div class="text-sm font-bold text-rose" style="font-size:26px">${f.counts.critical||0}</div><div class="text-xs text-slate mt-2">CRITICAL (&gt;730d) — escalated</div></div>
+  </div>
+  <div class="card">
+    <h3>Ingested Corpus · Version &amp; Freshness Tags</h3>
+    <table class="tbl">
+      <tr><th>Document</th><th>Type / Line</th><th>Version</th><th>Effective</th><th>Age (days)</th><th>Status</th><th>Clauses</th></tr>
+      ${(f.documents||[]).map(d=>`<tr>
+        <td><span class="text-white">${esc(d.title)}</span><br>
+            <span class="mono text-slate text-xs">${esc(d.document_id)}</span>
+            ${d.last_change?`<br><span class="text-xs text-slate">↳ ${esc(d.last_change)}</span>`:''}</td>
+        <td><span class="badge badge-info">${esc(d.doc_type)}</span><br><span class="text-xs text-slate">${esc(d.product_line)}</span></td>
+        <td class="mono">${esc(d.version)}</td>
+        <td class="mono">${esc(d.effective_date||'-')}</td>
+        <td class="mono">${d.age_days}</td>
+        <td><span class="badge ${bstat(d.freshness_status)}">${esc(d.freshness_status)}</span></td>
+        <td class="mono">${d.clause_count}</td>
+      </tr>`).join('')}
+    </table>
+  </div>
+  <div class="card">
+    <h3>Knowledge Update Log (append-only)</h3>
+    <table class="tbl">
+      <tr><th>Date</th><th>Document</th><th>Change</th><th>Summary</th><th>Approved by</th></tr>
+      ${(state.updates||[]).map(u=>`<tr>
+        <td class="mono">${esc(u.change_date)}</td>
+        <td class="mono">${esc(u.document_id)}<br><span class="text-slate text-xs">${esc(u.from_version)}</span></td>
+        <td class="text-xs">${esc(u.from_version)}</td>
+        <td>${esc(u.summary)}</td>
+        <td class="text-xs">${esc(u.approved_by)}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No updates recorded</td></tr>'}
+    </table>
+  </div>`;
+}
+// ─── AUDIT TRAIL ───
+async function loadSessions(){
+  try{
+    const [s,l]=await Promise.all([api('GET','/api/sessions?limit=40'),api('GET','/api/audit-logs')]);
+    state.sessions=s.sessions||[]; state.logs=l.logs||[];
+  }catch(e){ state.sessions=[]; state.logs=[]; }
+  if(state.view==='uw'&&state.uwTab==='audit'){
+    document.getElementById('uwBody').innerHTML=auditHTML();
+  }
 }
 
-function renderGoalAdvisory(el) {
-  el.innerHTML = `<div class="spinner"></div>`;
-  ensureCustomers().then(() => {
-    el.innerHTML = `
-      <div class="chat-container">
-        <div>
-          <div class="card">
-            <h3>Your Profile</h3>
-            <label>Acting as customer (demo)</label>
-            <select id="goal-cust">${state.customers.map(c =>
-              `<option value="${esc(c.customer_id)}">${esc(c.name)} · ${esc(c.customer_id)}</option>`).join('')}</select>
-          </div>
-          <div class="card">
-            <h3>Your Goal</h3>
-            <div class="form-group">
-              <label>What are you saving for?</label>
-              <select id="goal-select">${GOALS.map(g => `<option value="${g.id}">${esc(g.label)}</option>`).join('')}</select>
-            </div>
-            <div class="form-group"><label>Amount available (optional, ₹)</label><input type="number" id="goal-amount" placeholder="e.g. 50000" min="0"></div>
-            <button class="btn btn-primary" style="width:100%" id="goal-btn">Get Guidance</button>
-          </div>
-          <div class="clause-box">
-            <span class="clause-tag">Safe by design</span>
-            <div class="clause-text">Guidance is personalized to your verified profile. High-risk products are filtered out or escalated to a human advisor automatically. This is guidance, not investment advice.</div>
-            <div class="clause-auth">&#10003; Non-promissory language enforced</div>
-          </div>
-        </div>
-        <div id="goal-result"><p class="text-sm text-slate">Choose a goal and press "Get Guidance" to receive personalized, compliance-checked guidance.</p></div>
-      </div>`;
+function auditHTML(){
+  return `
+  <div class="card">
+    <h3>Policy Q&amp;A Sessions (immutable)</h3>
+    <table class="tbl">
+      <tr><th>Time</th><th>Track</th><th>Question</th><th>Intent</th><th>Decision</th><th>Override</th><th>Escalation reason</th></tr>
+      ${state.sessions.map(s=>`<tr>
+        <td class="mono text-xs">${esc((s.timestamp||'').slice(0,16))}</td>
+        <td><span class="badge ${s.track==='business'?'badge-info':'badge-success'}">${esc(s.track)}</span></td>
+        <td>${esc(s.question).slice(0,90)}</td>
+        <td class="text-xs text-slate">${esc(s.intent)}</td>
+        <td><span class="badge ${s.decision==='answer'?'badge-success':(s.decision==='escalate'?'badge-warning':'badge-danger')}">${esc(s.decision)}</span></td>
+        <td>${s.needs_human_override?'<span class="badge badge-warning">required</span>':'—'}</td>
+        <td class="text-xs text-slate">${esc(s.escalation_reason||'')}</td>
+      </tr>`).join('') || '<tr><td colspan="7" class="empty">No sessions yet</td></tr>'}
+    </table>
+  </div>
+  <div class="card">
+    <h3>Audit Ledger</h3>
+    <table class="tbl">
+      <tr><th>Time</th><th>Actor</th><th>Event</th><th>Risk</th><th>Details</th></tr>
+      ${state.logs.slice(0,30).map(l=>`<tr>
+        <td class="mono text-xs">${esc((l.timestamp||'').slice(0,16))}</td>
+        <td class="mono text-xs">${esc(l.actor)}</td>
+        <td>${esc(l.eventType)}</td>
+        <td><span class="badge ${l.riskLevel==='high'?'badge-warning':'badge-success'}">${esc(l.riskLevel)}</span></td>
+        <td class="text-xs text-slate">${esc(l.details)}</td></tr>`).join('')}
+    </table>
+  </div>`;
+}
+</script>
+<script>
+// ─── CUSTOMER PORTAL ───
+function cuTab(t){ state.cuTab=t; render();
+  if(t==='cmp'){ loadPolicies().then(()=>{ const b=document.getElementById('cuBody'); if(b) b.innerHTML=cmpHTML(); }); } }
 
-    document.getElementById('goal-btn').addEventListener('click', async () => {
-      const cid = document.getElementById('goal-cust').value;
-      const goal = document.getElementById('goal-select').value;
-      const amountRaw = document.getElementById('goal-amount').value;
-      const amount = amountRaw ? parseFloat(amountRaw) : null;
-      const btn = document.getElementById('goal-btn');
-      btn.disabled = true; btn.textContent = 'Preparing guidance…';
-      const resultEl = document.getElementById('goal-result');
-      resultEl.innerHTML = `<div class="chat-pane" style="padding:40px;text-align:center"><span class="loading-dot"></span> <span class="loading-dot"></span> <span class="loading-dot"></span>&nbsp; Preparing your personalized guidance…</div>`;
-      try {
-        const res = await api('POST', '/api/advisory/customer-goal',
-          { customer_id: cid, goal, amount });
-        renderGoalResult(resultEl, res);
-      } catch(e) {
-        resultEl.innerHTML =
-          `<div class="notfound-box">Could not prepare guidance: ${esc(e.message)}</div>`;
+function renderCU(){
+  return `
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn ${state.cuTab==='ask'?'active':''}" onclick="cuTab('ask')">Ask About My Policy</button>
+      <button class="tab-btn ${state.cuTab==='cmp'?'active':''}" onclick="cuTab('cmp')">Compare Policies</button>
+    </div>
+    <div id="cuBody">${state.cuTab==='ask'?chatHTML():cmpHTML()}</div>
+  </div>`;
+}
+
+function chatHTML(){
+  const msgs = state.chat.length ? state.chat.map(m=>`
+    <div class="msg ${m.role==='me'?'me':'bot'}">
+      <div class="avatar">${m.role==='me'?'🧑':'🛡️'}</div>
+      <div class="bubble">${m.html}${m.role==='bot'&&m.disclaimers?`<div class="disc-footer">${m.disclaimers.map(esc).join('<br>')}</div>`:''}</div>
+    </div>`).join('')
+    : `<div class="empty">Hi! Ask me what your policy covers, exclusions, renewals,<br>or endorsements — I'll explain in simple words.</div>`;
+  return `
+  <div class="grid-2">
+    <div class="card chat-pane" style="grid-column:1/-1;display:grid;grid-template-rows:1fr auto">
+      <div style="display:flex;gap:14px;align-items:stretch;min-height:0">
+        <div class="chat-scroll" id="chatScroll" style="flex:1">${msgs}</div>
+        <div style="width:250px;border-left:1px solid #1d2a44;padding-left:14px">
+          <h3 style="margin-top:2px">Try asking</h3>
+          <div class="chips" style="flex-direction:column;align-items:stretch">
+            <span class="chip" onclick="sendFromChip(this)">Is dental treatment covered in my health policy?</span>
+            <span class="chip" onclick="sendFromChip(this)">What is not covered under motor insurance?</span>
+            <span class="chip" onclick="sendFromChip(this)">What happens if I miss my renewal date?</span>
+            <span class="chip" onclick="sendFromChip(this)">How do I add my newborn to the policy?</span>
+            <span class="chip" onclick="sendFromChip(this)">Can I get maternity covered and when?</span>
+            <span class="chip" onclick="sendFromChip(this)">Compare SecurePlus Health and DriveCare Motor</span>
+          </div>
+          <p class="hint mt-3">I never promise claim outcomes and I can't give legal advice. Your policy document always has the final word.</p>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input id="chatBox" placeholder="Type your question…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn btn-primary" id="chatBtn" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>`;
+}
+function sendFromChip(el){ document.getElementById('chatBox').value=el.textContent; sendChat(); }
+
+async function sendChat(){
+  const box=document.getElementById('chatBox');
+  const text=(box?box.value:'').trim();
+  if(!text||state.busy) return;
+  state.busy=true;
+  state.chat.push({role:'me', html:esc(text)});
+  state.chat.push({role:'bot', html:'<span class="loading-dot"></span><span class="loading-dot" style="animation-delay:.15s"></span><span class="loading-dot" style="animation-delay:.3s"></span>'});
+  renderChat();
+  try{
+    const r=await api('POST','/api/customer/chat',{message:text});
+    const bot=state.chat[state.chat.length-1];
+    if(r.decision==='refuse'){ bot.html=`<div class="banner banner-refuse" style="margin:0">${esc(r.narrative)}</div>`; }
+    else if(r.type==='comparison'){ bot.html=comparisonBubbleHTML(r); }
+    else{
+      let h=esc(r.narrative);
+      if(r.citations&&r.citations.length){
+        h+=`<div class="mt-3">${r.citations.map(c=>`<span class="cite-chip mono">📄 ${esc(c.title)} §${esc(c.clause_ref)}</span>`).join('')}</div>`;
       }
-      btn.disabled = false; btn.textContent = 'Get Guidance';
-    });
-  }).catch(e => {
-    el.innerHTML = `<div class="notfound-box">Advisory service unavailable: ${esc(e.message)}</div>`;
-  });
+      bot.html=h;
+    }
+    bot.disclaimers=r.disclaimers||[];
+    if(r.suggested_followups&&r.suggested_followups.length){
+      bot.html+=`<div class="chips mt-3">${r.suggested_followups.map(f=>`<span class="chip" onclick="chipIntoChat(this.textContent)">${esc(f)}</span>`).join('')}</div>`;
+    }
+  }catch(e){
+    state.chat[state.chat.length-1].html=`Something went wrong: ${esc(e.message)}`;
+  }
+  state.busy=false; renderChat();
 }
+function chipIntoChat(t){ const b=document.getElementById('chatBox'); if(b){b.value=t;} sendChat(); }
 
-function renderGoalResult(el, res) {
-  const recs = res.recommendations || [];
-  el.innerHTML = `
-    <div class="chat-pane" style="padding:0">
-      <div class="chat-header">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="background:#1a1b3a;border:1px solid #4f46e5;color:#818cf8;padding:6px;border-radius:8px;font-size:16px">&#9878;</div>
-          <div>
-            <div style="font-weight:600;font-size:13px;color:#fff">Personalized Guidance</div>
-            <div style="font-size:10px;color:#94a3b8"><span style="display:inline-block;width:8px;height:8px;background:#10b981;border-radius:50%;margin-right:4px"></span>Suitability-checked · risk-aware</div>
-          </div>
-        </div>
-        <span class="badge badge-info" style="font-size:9px">${esc(res.goal || '')}</span>
-      </div>
-      <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
-        <div class="chat-msg ai"><div class="avatar ai">&#9878;</div><div class="bubble">${esc(res.narrative || '')}</div></div>
-        ${recs.length ? `
-          <div>
-            <h4 style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Options the system found suitable for you</h4>
-            <div class="flex" style="gap:6px;flex-wrap:wrap">
-              ${recs.map(r => `<span class="badge badge-success" style="padding:6px 12px;font-size:11px">&#10003; ${esc(r.name)}</span>`).join('')}
-            </div>
-          </div>` : `<p class="text-xs text-amber">No products could be confirmed suitable right now — please consult a relationship manager.</p>`}
-        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px">
-          ${(res.disclaimers || []).map(d => `<p class="text-xs text-amber mb-2" style="line-height:1.6">&#9878; ${esc(d)}</p>`).join('')}
-        </div>
-      </div>
+function comparisonBubbleHTML(r){
+  const relBadge=rel=>rel==='same'?'badge-success':(rel==='different'?'badge-warning':'badge-danger');
+  const relLabel=rel=>rel==='same'?'similar':(rel==='different'?'different':(rel==='only_a'?'only in A':'only in B'));
+  let h=`<b>${esc(r.policy_a.title)}</b> vs <b>${esc(r.policy_b.title)}</b><br><br>${esc(r.summary)}
+  <table class="tbl mt-3" style="font-size:11px">
+    <tr><th>Topic</th><th>Alignment</th><th>A</th><th>B</th></tr>
+    ${r.rows.slice(0,8).map(row=>`<tr>
+      <td class="text-xs text-slate">${esc(row.topic).slice(0,60)}</td>
+      <td><span class="badge ${relBadge(row.relation)}">${relLabel(row.relation)}</span></td>
+      <td class="clause-text">${esc(String(row.text_a).slice(0,90))}</td>
+      <td class="clause-text">${esc(String(row.text_b).slice(0,90))}</td>
+    </tr>`).join('')}
+  </table>
+  ${r.rows.length>8?`<p class="text-xs text-slate mt-2">+ ${r.rows.length-8} more rows — open the Compare tab for the full table.</p>`:''}
+  ${(r.disclosures||[]).slice(-2).map(d=>`<p class="text-xs text-slate mt-2">▸ ${esc(d)}</p>`).join('')}`;
+  return h;
+}
+function renderChat(){
+  const body=document.getElementById('cuBody');
+  if(body){ body.innerHTML=chatHTML(); }
+  const sc=document.getElementById('chatScroll');
+  if(sc) sc.scrollTop=sc.scrollHeight;
+}
+// ─── POLICY COMPARISON ───
+function cmpHTML(){
+  const opts=(state.policies||[])
+    .filter(p=>p.doc_type==='policy')
+    .map(p=>`<option value="${esc(p.document_id)}" class="text-white">${esc(p.title)} (${esc(p.product_line)})</option>`).join('');
+  let result='';
+  if(state.cmpResult){
+    const r=state.cmpResult;
+    const relBadge=rel=>rel==='same'?'badge-success':(rel==='different'?'badge-warning':'badge-danger');
+    const relLabel=rel=>rel==='same'?'similar':(rel==='different'?'different':(rel==='only_a'?'only in A':'only in B'));
+    result=`
+    <div class="card">
+      <h3>${esc(r.policy_a.title)} &nbsp;vs&nbsp; ${esc(r.policy_b.title)}</h3>
+      <div class="answer-block mb-3">${esc(r.summary)}</div>
+      <table class="tbl">
+        <tr><th>Topic</th><th>Alignment</th><th>${esc(r.policy_a.title)}</th><th>${esc(r.policy_b.title)}</th></tr>
+        ${r.rows.map(row=>`<tr>
+          <td class="text-xs text-slate" style="max-width:150px">${esc(row.topic)}</td>
+          <td><span class="badge ${relBadge(row.relation)}">${relLabel(row.relation)} ${row.similarity?Number(row.similarity).toFixed(2):''}</span></td>
+          <td class="clause-text">${esc(row.text_a)||'<span class="empty" style="padding:0">—</span>'}</td>
+          <td class="clause-text">${esc(row.text_b)||'<span class="empty" style="padding:0">—</span>'}</td>
+        </tr>`).join('')}
+      </table>
+      <h3 class="mt-3">Important limitations</h3>
+      ${r.disclosures.map(d=>`<p class="disc-footer">${esc(d)}</p>`).join('')}
     </div>`;
-  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  return `
+  <div class="card">
+    <h3>Semantic Policy Comparison</h3>
+    <p class="text-xs text-slate mb-3">Clauses are embedded and aligned by meaning; differences are computed
+       from similarity, then explained factually. Pricing and eligibility are intentionally out of scope.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+      <div><label>Policy A</label><select id="cmpA">${opts}</select></div>
+      <div><label>Policy B</label><select id="cmpB">${opts}</select></div>
+      <button class="btn btn-primary" id="cmpBtn" onclick="runCompare()">Compare</button>
+    </div>
+  </div>
+  ${result||'<div class="card"><div class="empty">Pick two policies to see an embedding-aligned<br>side-by-side of coverage, exclusions and conditions.</div></div>'}`;
 }
 
-// ─── Start ───
-renderLogin();
+async function runCompare(){
+  const a=document.getElementById('cmpA').value, b=document.getElementById('cmpB').value;
+  if(!a||!b||a===b){ return; }
+  state.busy=true;
+  document.getElementById('cmpBtn').disabled=true;
+  document.getElementById('cmpBtn').textContent='Comparing…';
+  try{
+    state.cmpResult=await api('POST','/api/customer/compare',{policy_a:a,policy_b:b});
+  }catch(e){ alert('Comparison failed: '+e.message); }
+  state.busy=false;
+  document.getElementById('cuBody').innerHTML=cmpHTML();
+}
+
+// ─── POLICIES + BOOT ───
+async function loadPolicies(){
+  try{ const p=await api('GET','/api/policies'); state.policies=p.policies||[]; }
+  catch(e){ state.policies=[]; }
+}
+
+(function boot(){
+  render();
+})();
 </script>
 </body>
 </html>

@@ -1,76 +1,62 @@
 # Ethics, Risk & Governance Controls
 
-This document maps the assistant's controls to the governance expectations of
-the capstone brief: bias, over-personalization, regulatory compliance, and
-human-in-the-loop checkpoints.
+## 1. Hallucination prevention (layered)
 
----
+| Layer | Control | Where |
+|-------|---------|-------|
+| Retrieval gate | Hits below similarity 0.30 discarded; empty evidence never reaches the LLM — it escalates instead | `knowledge/policy_store.retrieve` |
+| Grounded prompting | "Use only facts present in the clauses. No outside insurance knowledge." in every generation template | `prompts/*_answer_prompt.txt` |
+| Citation validation | Every `[doc §ref]` emitted by the LLM must resolve to an actually-retrieved chunk; unresolvable refs are dropped and lower confidence | `agents/policy_agent._validate_citations` |
+| Output contract | Strict JSON answers; truncated/invalid output is salvaged or replaced by a source-listing fallback marked `_degraded` → forced escalation | `agents/policy_agent._generate_answer` |
+| Deterministic decision | answer / escalate / refuse decided by code thresholds, never by the model | `agents/policy_agent._decide` |
 
-## 1. Bias in Recommendations
+## 2. Over-simplification risks (customer track)
 
-| Risk | Mitigation | Where |
-|---|---|---|
-| Demographic proxying (gender/city influencing advice) | Gender is stored but **never used** by the risk score or suitability rules; city only sets cost-of-living context in raw data, not verdicts | `profiling/profile_builder.py`, `guardrails/suitability.py` |
-| Segment stereotyping | Segments are descriptive labels for RMs, never rule inputs — no product verdict reads `segment` | `suitability.py` (no reference) |
-| Wealth bias toward high-revenue products | The engine has **no revenue field**; scoring rewards goal fit, horizon fit and risk alignment only. Cross-sell pressure is structurally impossible | `evaluate()` scoring weights |
-| Label drift across clusters | Rank-based cluster naming avoids absolute thresholds that could encode majority norms | `segmentation.py` |
+Simplified language can drop conditions that matter. Mitigations:
+- Every customer reply carries the disclaimer: *"The policy document, its wordings and endorsements prevail over this summary."*
+- Source chips show exactly which clause versions informed the summary.
+- Numbers are preserved verbatim from clauses (limits, waiting periods); the prompt forbids inventing figures.
+- The safe-language scrub rewrites any absolute promise ("all expenses covered", "no waiting period") into conditional wording.
 
-**Fairness test:** `test_conservative_high_risk_blocked_with_sebi_citation` proves protection applies by *capacity*, not by wealth or identity.
+## 3. Policy misinterpretation impact
 
-## 2. Over-Personalization Risks
+- **Version correctness**: every retrieved clause displays its version + effective date; answers name which document version governs.
+- **Precedence**: SOP-UW-011 order (regulatory > endorsement > base wording) is embedded into business-track prompts.
+- **Ambiguity surfacing**: the generator must list `ambiguities` instead of guessing; these surface as warnings on the underwriter console.
+- **Conflict escalation**: materially conflicting or incomplete evidence forces escalation with a documented reason.
 
-| Risk | Mitigation |
-|---|---|
-| Customers boxed into past behaviour | Stated appetite can raise capacity up to computed level; only downward binding is automatic, and mismatches are surfaced to the RM (`risk_alignment_note`) rather than silently enforced |
-| Filter bubbles (only "safe" suggestions forever) | RM track shows escalated candidates too — the human decides whether to proceed with documented acknowledgement |
-| Creepy use of transaction detail in customer chat | Customer track prompt forbids quoting raw profile internals ("Do not reveal internal scores, KYC details, segment names"); payload strips `profile_summary` entirely (`profile_summary=""`) |
+## 4. Knowledge freshness
 
-## 3. Regulatory Compliance Mapping (SEBI / RBI)
+- `fresh ≤365d` · `stale >365d` (warning attached) · `critical >730d` (auto-escalation). Undated documents are treated as critical.
+- Confidence scores are penalized for stale/critical sources so downstream consumers can trust the number.
+- Append-only update log provides audit-grade change history (date, doc, change, approver).
 
-| Requirement | Source clause | Implementation |
-|---|---|---|
-| Suitability obligation — product grade vs client capacity | SEBI/HO/OIAE/2025-26/07 §1 | Gap-1 ⇒ escalate; gap ≥ 2 ⇒ block; citation attached to candidate |
-| Documented risk profiling beyond stated willingness | SEBI §1.1 | Behavioural features feed `computed_risk_capacity`; conservative value binds |
-| Retained rationale per recommendation | SEBI §1.2 | Reasons/warnings persisted in `advisory_sessions` + audit ledger |
-| Non-promissory language | SEBI §2.1 | Banned-pattern scrubber runs post-generation; violations logged |
-| Escalation before execution for vulnerable cases | SEBI §3, RBI §2.1 | Senior-citizen & first-time-investor escalations with mandatory override banner |
-| KYC prerequisite for recommendations | RBI/2025-26/21 §2 | Global gate: any non-verified status blocks every recommendation |
-| Guidance-vs-advice distinction | RBI §1.1 | Customer track labelled guidance; three-part disclaimer states it is not investment advice |
-| Human access to review/override system output | RBI §3 | RM console escalation banners + `needs_human_override` flag on every response |
+## 5. Scope discipline
 
-## 4. Human-in-the-Loop Checkpoints
+Refused outright (routed to humans):
+- Legal opinions, litigation strategy, tribunal outcome predictions.
+- Claim approval/rejection pre-judgement.
+- Pricing/quotation decisions.
 
-```
-① Profile build      ── deterministic, auditable features (no human needed)
-② Engine verdicts    ── deterministic
-③ ESCALATION GATE    ── HUMAN: supervisor approval required for escalated items
-④ LLM verbalization  ── machine output, but…
-⑤ SCRUBBER           ── machine control on language
-⑥ CUSTOMER DECISION  ── HUMAN: customer explicitly nudged to consult an advisor
-                        before acting; assistant never executes anything
-```
+The refusal message explains *why* and redirects to the correct channel — the assistant stays useful without overstepping.
 
-Escalations are visible in the RM console with a red banner and cannot be
-"dismissed" in the UI — the flag travels with the payload until an approved
-human acts outside the system.
+## 6. Human-in-the-loop
 
-## 5. Audit Trail
+- Escalations are first-class outcomes with explicit reasons shown in the UI and stored in `policy_sessions`.
+- Business track marks `needs_human_override=true`; the console banner instructs senior-underwriter sign-off per SOP timelines (ack 4h, resolve 24h).
+- Customer track never exposes internal reasoning; unresolved cases hand off to the service desk with a clear message.
 
-Every interaction writes two records:
+## 7. Accountability & auditability
 
-- `advisory_sessions` — track, customer, question, answered, override flag, escalation reason.
-- `audit_logs` — actor-level ledger entries (`RM Advisory Query`, `Customer Goal Guidance`, profile views), with elevated risk level when overrides are pending.
+- Immutable `audit_logs` ledger (logins, queries, comparisons, risk levels).
+- `policy_sessions` stores question, intent, decision, confidence, citations count and escalation reason for every interaction.
+- Compliance notes attached to each response record post-generation scrubs that were applied.
 
-## 6. Out-of-Scope Guarantees
+## 8. Known limitations & improvements
 
-The system contains **no execution path**: it cannot place orders, move money,
-or generate predictions of guaranteed performance. Expected-return figures are
-labelled indicative and never guaranteed — in structured data, corpus prose,
-prompts, and scrubber patterns simultaneously.
-
-## 7. Known Limitations (honest disclosure)
-
-1. Synthetic data may under-represent irregular-income volatility patterns.
-2. KMeans segments are descriptive; they are not validated against business KPIs.
-3. The banned-language list covers common mis-selling phrases but not all possible phrasings; it is a control layer, not proof of compliance.
-4. Compliance documents are synthetic summaries written for this capstone, not verbatim regulation text.
+1. **Heuristic intent classifier** — could be replaced by a fine-tuned classifier trained on labelled underwriter queries.
+2. **Single embedding space for all doc types** — doc-type-aware retrieval (e.g., separate namespaces per product line) would sharpen recall.
+3. **No reranker** — a cross-encoder rerank stage would improve precision on multi-topic questions.
+4. **English-only corpus** — multilingual policies need language detection + per-language indexes.
+5. **Escalation workflow is advisory** — integrating a ticketing system with SLA tracking would close the loop operationally.
+6. **Evaluation harness** — golden Q/A set per policy line with automated grounding/recall scoring should run in CI.

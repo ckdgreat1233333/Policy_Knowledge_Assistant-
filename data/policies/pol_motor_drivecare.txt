@@ -1,0 +1,50 @@
+Title: DriveCare Motor Package Policy
+Doc Type: policy
+Product Line: motor
+Policy Id: POL-MOT-002
+Version: v3.0
+Effective Date: 2026-03-10
+Supersedes: v2.4
+Approved By: Product Committee
+
+1. Scope Of Cover
+This package policy covers loss of or damage to the insured vehicle described in the schedule, liability towards third parties for bodily injury and property damage as required by the Motors Vehicles Act, and personal accident cover for the owner-driver as per Section 3.
+
+1.1 Own Damage Cover
+Own damage cover applies to the insured vehicle against fire, explosion, self-ignition, burglary, housebreaking, riot, strike, malicious act, terrorist activity, earthquake, flood, typhoon, inundation, landslide, rockslide, and accidental external means.
+
+1.2 Third Party Liability
+Liability for third party death or bodily injury is unlimited as per judicial awards; third party property damage is covered up to Rs 7.5 lakh for private cars. Third party claims are adjudicated by the Motor Accidents Claims Tribunal and are not decided by the insurer alone.
+
+2. Insured Declared Value
+Insured Declared Value is the manufacturer listed ex-showroom price of the vehicle less depreciation as per the schedule in Annexure M. IDV is fixed at inception and renewal and directly caps own damage claim settlement.
+
+3. Depreciation Schedule
+Depreciation for parts in own damage claims applies as follows: zero depreciation for rubber nylon plastic parts tyres tubes batteries airbags for vehicles up to 5 years where the zero depreciation add-on is purchased; otherwise fibre glass components 30 percent, and mechanical electrical parts depreciate per age band table in Annexure M.
+
+4. Add-On Covers
+Optional add-ons available at additional premium are Zero Depreciation, Engine Protect, Roadside Assistance, Return To Invoice, Consumables Cover, and No Claim Bonus Protection. Add-ons apply only if the corresponding endorsement appears in the policy schedule.
+
+4.1 Zero Depreciation Add-On
+Zero Depreciation add-on waives parts depreciation for own damage claims for vehicles up to 5 vehicle age. A maximum of two zero depreciation claims are admissible per policy year; thereafter standard depreciation applies.
+
+5. No Claim Bonus
+No Claim Bonus accrues at 20 percent for the first claim-free year, 25 percent for two, 30 percent for three, 35 percent for four and 50 percent from five consecutive claim-free years. NCB follows the insured person on porting to another insurer and is forfeited upon any own damage claim in the expiring policy period.
+
+6. Exclusions
+This policy does not cover consequential loss, wear and tear, mechanical or electrical breakdown failure, tyres and tubes unless damaged concurrently with the vehicle, vehicles used outside the permitted usage declared in the proposal, driving without a valid licence, driving under the influence of alcohol or intoxicants, use for speed testing racing reliability trial, war perils, and vehicles carrying goods beyond permitted capacity.
+
+7. Claims Procedure
+Accident claims require immediate intimation to the insurer and police FIR for theft, third party injury or fatal accidents. A surveyor inspection is mandated before repair for own damage claims above Rs 50,000; photographs-based digital survey may be allowed below this threshold at the insurer's discretion.
+
+7.1 Cashless Repair Network
+Repairs at network garages proceed cashless upon surveyor approval; repairs at non-network garages are reimbursed based on assessed amount less excess and depreciation.
+
+8. Voluntary Deductible And Compulsory Excess
+A compulsory excess applies per the tariff for claims involving aged drivers or specific vehicle classes. A voluntary deductible chosen at inception earns a premium discount per the rate card and is deducted from each own damage claim settlement.
+
+9. Transfer Of Ownership
+Ownership transfer requires endorsement within 14 days of vehicle sale with Form 29 and 30 copies. NCB earned by the seller does not transfer to the buyer; the buyer may earn NCB afresh from the following renewal.
+
+10. Renewal Inspection
+Break in coverage beyond 90 days requires fresh vehicle inspection before renewal and results in loss of accrued No Claim Bonus and re-imposition of waiting periods applicable to add-on covers.

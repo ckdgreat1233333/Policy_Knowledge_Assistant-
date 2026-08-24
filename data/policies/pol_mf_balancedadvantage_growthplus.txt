@@ -1,0 +1,117 @@
+Title: GrowthPlus Balanced Advantage Fund Policy
+Doc Type: policy
+Product Line: mutual fund
+Policy Id: POL-MF-BAF-001
+Version: v1.0
+Effective Date: 2026-05-01
+Supersedes: -
+Approved By: Investment Products Committee
+
+Product Overview
+GrowthPlus Balanced Advantage Fund is a hybrid investment product designed to provide long-term capital appreciation with moderate portfolio volatility by dynamically allocating investments between equity and fixed-income instruments. The allocation may change based on market conditions, valuation indicators and the fund manager's investment strategy. This is a market-linked investment and does not provide guaranteed returns or protection of principal.
+
+1.1 Investment Objective
+The primary objective is to generate long-term capital appreciation through investments in equity and equity-related securities while maintaining exposure to fixed-income instruments to manage portfolio volatility.
+
+1.2 Asset Allocation
+The portfolio may maintain equity and equity-related exposure between 30 percent and 80 percent of the portfolio. Fixed-income and money-market instruments may comprise between 20 percent and 70 percent. The allocation may vary within these limits based on the fund's investment strategy and prevailing market conditions.
+
+1.3 Minimum Investment
+The minimum initial investment is Rs 5,000. Additional investments may be made in multiples of Rs 1,000. Systematic Investment Plans may be started with a minimum monthly contribution of Rs 500.
+
+Eligibility
+Resident individual investors, Hindu Undivided Families, trusts, companies and other eligible entities permitted under applicable regulations may invest subject to completion of applicable KYC and account-opening requirements. Minors may invest through a legally appointed guardian where permitted.
+
+2.1 Risk Profile
+This product is intended primarily for investors with moderate to moderately high risk tolerance and a medium-to-long investment horizon. It may not be appropriate for investors seeking guaranteed returns, capital protection or short-term liquidity.
+
+2.2 Recommended Investment Horizon
+A minimum investment horizon of 5 years is recommended. Investors with a horizon of less than 3 years should generally consider whether market-linked exposure is appropriate for their financial objective and liquidity requirements.
+
+Return And Market Risk
+Returns are market-linked and depend on the performance of the underlying securities. Past performance does not guarantee future results. The value of investments may increase or decrease depending on equity-market movements, interest-rate changes, credit events, economic conditions and other market factors.
+
+3.1 Capital Loss Risk
+The investor may receive less than the amount originally invested. The product does not guarantee preservation of capital.
+
+3.2 Volatility
+Equity exposure can result in significant short-term fluctuations. The fixed-income component may reduce portfolio volatility but does not eliminate investment risk.
+
+Liquidity And Redemption
+Investors may submit redemption requests on applicable business days subject to the fund's operational procedures. Redemption proceeds are normally paid within the settlement period prescribed under applicable regulations.
+
+4.1 Exit Load
+A 1 percent exit load may apply to units redeemed within 12 months from the date of investment. No exit load applies after the applicable holding period, subject to the scheme's current terms.
+
+4.2 Systematic Withdrawal
+Eligible investors may register a systematic withdrawal instruction subject to minimum withdrawal amounts and applicable scheme conditions. Systematic withdrawals may reduce the invested capital over time.
+
+Taxation
+Tax treatment depends on applicable tax laws, the investor's circumstances, the nature and duration of the investment and prevailing regulations. Investors should consult an appropriately qualified tax professional for individual tax advice.
+
+Fees And Expenses
+The fund may charge management fees, operating expenses and other permitted expenses within applicable regulatory limits. The applicable expense ratio and other charges must be disclosed to investors through the current product documentation before investment.
+
+Suitability Requirements
+This product may be considered where the customer has a medium-to-long-term financial goal, accepts market fluctuations and has a moderate or higher risk tolerance.
+
+7.1 Suitable Customer Profiles
+The product may be suitable for customers seeking long-term wealth accumulation, retirement corpus growth, children's future education funding or other goals with an investment horizon of at least 5 years.
+
+7.2 Unsuitable Customer Profiles
+The product should generally not be recommended where the customer requires guaranteed returns, has a very low risk tolerance, requires the invested funds for immediate expenses or has a short-term investment horizon.
+
+7.3 Emergency Fund Restriction
+The product should not be recommended as a substitute for an emergency fund. Customers should maintain adequate liquid savings for near-term financial obligations before considering market-linked investments.
+
+Recommendation Controls
+A recommendation may be generated only after the customer's risk profile, investment horizon, stated financial goal, liquidity requirements and product eligibility have been assessed.
+
+8.1 Mandatory Suitability Checks
+The recommendation engine must verify:
+
+Customer risk tolerance is compatible with the product risk level.
+Investment horizon is consistent with the recommended minimum horizon.
+Customer does not require guaranteed capital protection.
+Investment amount does not conflict with identified liquidity requirements.
+Required KYC and eligibility information is available.
+No existing portfolio concentration creates an inappropriate additional exposure.
+
+8.2 Risk Mismatch
+If the customer's assessed risk tolerance is lower than the product's permitted risk category, the product must not be presented as a recommended investment. The assistant should explain the mismatch and provide lower-risk alternatives where available.
+
+Mis-Selling Prevention
+The product must not be recommended solely because of historical returns, promotional campaigns, sales targets, commissions or customer similarity to other investors.
+
+The assistant must not state or imply that:
+
+Returns are guaranteed.
+Capital cannot be lost.
+Past performance will continue.
+The product is suitable for every investor.
+The product is risk-free.
+The customer must invest immediately.
+Explainability Requirements
+Every personalized recommendation must explain why the product may or may not align with the customer's stated goal, risk tolerance and investment horizon.
+
+The explanation must include relevant benefits, material risks, liquidity considerations and at least one reasonable alternative where the recommendation could expose the customer to meaningful risk.
+
+Human Review And Escalation
+Human advisor review is required when customer information is incomplete or contradictory, the customer's risk profile conflicts with the proposed investment, the proposed investment creates significant portfolio concentration, the customer requests a return guarantee, or the recommendation involves an exception to standard suitability rules.
+
+Customer Disclosure
+Before investment, the customer must be informed that the product is market-linked, returns are not guaranteed, the value of investments can fall, and the investor may lose part or all of the invested capital depending on market performance.
+
+Product Information Validity
+The recommendation engine must retrieve the latest approved product documentation before generating product-specific recommendations. Superseded product documents must not be used for active recommendations.
+
+Monitoring And Review
+Product suitability rules, risk classifications, fees, investment limits and other material product characteristics must be reviewed periodically by the designated investment product and compliance teams.
+
+Any material change to the product must trigger review of existing recommendation rules and associated RAG knowledge sources.
+
+Advisory Limitation
+This policy governs a personalized, non-binding financial guidance capability. A recommendation generated by the assistant does not constitute a guarantee of investment performance or replace the judgment of an appropriately qualified financial advisor.
+
+This document is a synthetic product-policy document created for the Personalized Financial Advisory Assistant capstone and does not represent an actual investment product or offer.
+ug
